@@ -1,0 +1,346 @@
+<!-- 
+  ============================================================
+  VEMAR AI — Compliance Section
+  HOW TO ADD TO YOUR SITE:
+  1. Paste the <section> block where you want it in your HTML
+  2. Paste the <style> block into your <head> or CSS file
+  3. Paste the <script> block just before </body>
+  4. For production: proxy the API call through /api/compliance
+     and set ANTHROPIC_API_KEY in Vercel env vars
+  ============================================================
+-->
+
+<!-- ══════════════════════════════════════════
+     SECTION HTML — paste in your page body
+══════════════════════════════════════════ -->
+<section id="compliance" class="vc-section">
+  <div class="vc-grid-bg"></div>
+  <div class="vc-inner">
+
+    <div class="vc-header">
+      <div class="vc-eyebrow">SECURITY &amp; COMPLIANCE FRAMEWORK</div>
+      <h2 class="vc-title-main">CERTIFIED. <span>AUDITED.</span><br>BATTLE-TESTED.</h2>
+      <p class="vc-desc">Click any certification — our AI explains exactly what it means for your data in real time.</p>
+    </div>
+
+    <div id="vemar-comp-grid" class="vc-cards-grid"></div>
+
+    <div class="vc-trust-bar">
+      <p class="vc-trust-text"><span>ENTERPRISE SECURITY DOCS</span> — AUDIT REPORTS · DPAs · BAAs AVAILABLE ON REQUEST</p>
+      <a href="mailto:security@vemarai.com" class="vc-trust-btn">REQUEST DOCS &#x2192;</a>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     STYLES — paste into your <head> or .css
+══════════════════════════════════════════ -->
+<style>
+.vc-section {
+  position: relative;
+  background: #020b18;
+  padding: 96px 24px 112px;
+  overflow: hidden;
+  border-top: 1px solid rgba(0,212,255,0.08);
+}
+.vc-grid-bg {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.vc-inner {
+  position: relative; z-index: 1;
+  max-width: 1100px; margin: 0 auto;
+}
+
+/* Header */
+.vc-header { text-align: center; margin-bottom: 64px; }
+.vc-eyebrow {
+  display: inline-block;
+  font-family: 'Courier New', monospace;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: #00d4ff;
+  border: 1px solid rgba(0,212,255,0.3);
+  padding: 6px 18px; margin-bottom: 28px;
+}
+.vc-title-main {
+  font-family: 'Courier New', monospace;
+  font-size: clamp(28px, 4.5vw, 48px);
+  font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; color: #ffffff;
+  line-height: 1.1; margin-bottom: 16px;
+}
+.vc-title-main span { color: #00d4ff; }
+.vc-desc {
+  font-family: 'Courier New', monospace;
+  font-size: 13px; color: rgba(255,255,255,0.4);
+  max-width: 520px; margin: 0 auto;
+  line-height: 1.8; letter-spacing: 0.03em;
+}
+
+/* Cards grid */
+.vc-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid rgba(0,212,255,0.12);
+  overflow: hidden;
+}
+@media (max-width: 768px) { .vc-cards-grid { grid-template-columns: 1fr; } }
+@media (min-width: 769px) and (max-width: 1024px) { .vc-cards-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* Individual card */
+.vc-card {
+  background: rgba(2,11,24,0.95);
+  border-right: 1px solid rgba(0,212,255,0.12);
+  border-bottom: 1px solid rgba(0,212,255,0.12);
+  padding: 28px 24px 22px;
+  cursor: pointer; position: relative; overflow: hidden;
+  transition: background 0.2s;
+}
+.vc-card:nth-child(3n) { border-right: none; }
+.vc-card:nth-last-child(-n+3) { border-bottom: none; }
+@media (max-width: 768px) {
+  .vc-card { border-right: none !important; }
+  .vc-card:nth-last-child(-n+3) { border-bottom: 1px solid rgba(0,212,255,0.12) !important; }
+  .vc-card:last-child { border-bottom: none !important; }
+}
+@media (min-width: 769px) and (max-width: 1024px) {
+  .vc-card:nth-child(2n) { border-right: none !important; }
+}
+.vc-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: #00d4ff;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.3s;
+}
+.vc-card:hover, .vc-card.vc-active { background: rgba(0,212,255,0.05); }
+.vc-card:hover::before, .vc-card.vc-active::before { transform: scaleX(1); }
+
+.vc-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+.vc-icon {
+  font-size: 20px; width: 42px; height: 42px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(0,212,255,0.2);
+  background: rgba(0,212,255,0.07);
+}
+.vc-badge {
+  display: flex; align-items: center; gap: 5px;
+  font-family: 'Courier New', monospace;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: #00d4ff;
+}
+.vc-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #00d4ff;
+  animation: vc-pulse 2.5s ease-in-out infinite;
+}
+@keyframes vc-pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+.vc-name {
+  font-family: 'Courier New', monospace;
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: #ffffff; margin-bottom: 5px;
+}
+.vc-sub {
+  font-family: 'Courier New', monospace;
+  font-size: 10px; color: rgba(255,255,255,0.28);
+  letter-spacing: 0.05em; line-height: 1.5;
+}
+.vc-prompt {
+  display: flex; align-items: center; gap: 7px; margin-top: 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: rgba(0,212,255,0.4);
+  transition: color 0.2s;
+}
+.vc-card:hover .vc-prompt, .vc-card.vc-active .vc-prompt { color: #00d4ff; }
+.vc-prompt svg { transition: transform 0.25s; }
+.vc-card.vc-active .vc-prompt svg { transform: rotate(180deg); }
+
+/* Drawer */
+.vc-drawer { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.28s; opacity: 0; }
+.vc-drawer.vc-open { max-height: 700px; opacity: 1; }
+.vc-drawer-inner { border-top: 1px solid rgba(0,212,255,0.1); margin-top: 18px; padding-top: 18px; }
+
+/* AI output */
+.vc-ai-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: rgba(0,212,255,0.5); margin-bottom: 12px;
+}
+.vc-ai-label::before {
+  content: ''; display: inline-block; width: 5px; height: 5px;
+  border-radius: 50%; background: #00d4ff;
+  animation: vc-pulse 1.5s ease-in-out infinite;
+}
+.vc-ai-body p {
+  font-family: 'Courier New', monospace;
+  font-size: 12px; font-weight: 400; line-height: 1.85;
+  color: rgba(255,255,255,0.5); margin-bottom: 10px; letter-spacing: 0.02em;
+}
+.vc-ai-body strong { color: rgba(255,255,255,0.88); font-weight: 700; }
+.vc-ai-body ul { list-style: none; margin-bottom: 14px; }
+.vc-ai-body li {
+  font-family: 'Courier New', monospace;
+  font-size: 11.5px; color: rgba(255,255,255,0.45);
+  line-height: 1.75; padding: 3px 0 3px 18px; position: relative;
+}
+.vc-ai-body li::before { content: '>'; position: absolute; left: 0; color: #00d4ff; font-size: 10px; top: 5px; }
+
+/* Loading */
+.vc-loading { display: flex; align-items: center; gap: 10px; padding: 16px 0; }
+.vc-dots { display: flex; gap: 5px; }
+.vc-dots span { width: 4px; height: 4px; border-radius: 50%; background: #00d4ff; animation: vc-pulse 1.4s ease-in-out infinite; }
+.vc-dots span:nth-child(2) { animation-delay: 0.2s; }
+.vc-dots span:nth-child(3) { animation-delay: 0.4s; }
+.vc-loading span:last-child {
+  font-family: 'Courier New', monospace;
+  font-size: 11px; color: rgba(0,212,255,0.4); letter-spacing: 0.06em;
+}
+.vc-cursor { display: inline-block; width: 7px; height: 13px; background: #00d4ff; margin-left: 2px; vertical-align: middle; animation: vc-blink 0.8s step-end infinite; }
+@keyframes vc-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+.vc-learn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #00d4ff; text-decoration: none;
+  border: 1px solid rgba(0,212,255,0.25); padding: 6px 14px; margin-top: 8px;
+  transition: background 0.18s, border-color 0.18s;
+}
+.vc-learn:hover { background: rgba(0,212,255,0.1); border-color: rgba(0,212,255,0.5); }
+.vc-error { font-family: 'Courier New', monospace; font-size: 11px; color: rgba(255,80,80,0.7); letter-spacing: 0.04em; padding: 8px 0; }
+
+/* Trust bar */
+.vc-trust-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+  margin-top: 2px; padding: 20px 28px;
+  border: 1px solid rgba(0,212,255,0.12); border-top: none;
+  background: rgba(0,212,255,0.03);
+}
+.vc-trust-text {
+  font-family: 'Courier New', monospace;
+  font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 0.05em;
+}
+.vc-trust-text span { color: #ffffff; }
+.vc-trust-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: #020b18; background: #00d4ff;
+  border: none; padding: 10px 22px;
+  text-decoration: none; transition: opacity 0.18s;
+}
+.vc-trust-btn:hover { opacity: 0.85; }
+</style>
+
+
+<!-- ══════════════════════════════════════════
+     SCRIPT — paste just before </body>
+══════════════════════════════════════════ -->
+<script>
+(function() {
+  var CARDS = [
+    { icon:"🔐", name:"SOC 2 TYPE II", sub:"AUDITED ANNUALLY · CONTROLS VERIFIED", badge:"CERTIFIED", link:"https://www.aicpa-cima.com/resources/landing/soc-2-information-security", linklabel:"ABOUT SOC 2", prompt:"You are the compliance officer for VEMAR AI — an AI-powered deepfake detection and digital identity defense platform. Explain what SOC 2 Type II certification means for VEMAR AI customers. Cover what was audited, why Type II is stronger than Type I, and what it means for enterprise data. Be concise and specific to an AI security company. Use short paragraphs and a bullet list with '-' bullets. Max 160 words." },
+    { icon:"🇪🇺", name:"GDPR COMPLIANT", sub:"EU REG 2016/679 · DATA SUBJECT RIGHTS", badge:"COMPLIANT", link:"https://gdpr.eu/what-is-gdpr/", linklabel:"ABOUT GDPR", prompt:"You are the compliance officer for VEMAR AI — an AI-powered deepfake detection and digital identity defense platform. Explain what GDPR compliance means for VEMAR AI processing biometric and identity data. Cover lawful basis, data subject rights, DPAs and SCCs. Short paragraphs and '-' bullets. Max 160 words." },
+    { icon:"🏥", name:"HIPAA READY", sub:"HEALTHCARE DATA · BAA AVAILABLE", badge:"READY", link:"https://www.hhs.gov/hipaa/for-professionals/index.html", linklabel:"ABOUT HIPAA", prompt:"You are the compliance officer for VEMAR AI — an AI-powered deepfake and identity fraud detection platform. Explain HIPAA Readiness for VEMAR AI's healthcare customers. Cover PHI protections, BAA availability, and why AI identity verification matters for telehealth. Short paragraphs and '-' bullets. Max 160 words." },
+    { icon:"🛡️", name:"ISO 27001", sub:"ISMS CERTIFIED · ANNUAL SURVEILLANCE", badge:"CERTIFIED", link:"https://www.iso.org/standard/27001", linklabel:"ABOUT ISO 27001", prompt:"You are the compliance officer for VEMAR AI — an AI-powered deepfake detection and digital identity defense platform. Explain ISO 27001 certification for VEMAR AI. Cover what an ISMS covers at an AI security company, how it protects customer data, and why it matters for government procurement. Short paragraphs and '-' bullets. Max 160 words." },
+    { icon:"🏛️", name:"CCPA COMPLIANT", sub:"CALIFORNIA PRIVACY ACT · US RIGHTS", badge:"COMPLIANT", link:"https://oag.ca.gov/privacy/ccpa", linklabel:"ABOUT CCPA", prompt:"You are the compliance officer for VEMAR AI — an AI-powered deepfake detection and digital identity defense platform. Explain CCPA compliance for VEMAR AI. Cover consumer rights when VEMAR AI processes identity data, opt-out and deletion rights, and how VEMAR AI exceeds minimums. Short paragraphs and '-' bullets. Max 160 words." },
+    { icon:"⚖️", name:"EU AI ACT", sub:"REG (EU) 2024/1689 · HIGH-RISK ALIGNED", badge:"ALIGNED", link:"https://artificialintelligenceact.eu/", linklabel:"ABOUT EU AI ACT", prompt:"You are the compliance officer for VEMAR AI — an AI-powered deepfake detection and digital identity defense platform. Explain EU AI Act alignment for VEMAR AI. Cover why VEMAR AI is high-risk AI, specific obligations met (transparency, oversight, bias testing), and what this means for EU customers. Short paragraphs and '-' bullets. Max 180 words." }
+  ];
+
+  var cache = {};
+
+  function parse(text) {
+    var lines = text.split('\n').filter(function(l){ return l.trim(); });
+    var html = '', inList = false;
+    lines.forEach(function(line) {
+      var isBullet = /^[-*]\s/.test(line.trim());
+      var clean = line.replace(/^[-*]\s+/,'').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+      if (isBullet) {
+        if (!inList) { html += '<ul>'; inList = true; }
+        html += '<li>' + clean + '</li>';
+      } else {
+        if (inList) { html += '</ul>'; inList = false; }
+        if (clean) html += '<p>' + clean + '</p>';
+      }
+    });
+    if (inList) html += '</ul>';
+    return html;
+  }
+
+  async function loadAI(idx, el) {
+    if (cache[idx]) { el.innerHTML = cache[idx]; return; }
+    var c = CARDS[idx];
+    el.innerHTML = '<div class="vc-loading"><div class="vc-dots"><span></span><span></span><span></span></div><span>// QUERYING AI ENGINE...</span></div>';
+    try {
+      var res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, stream: true, messages: [{ role: "user", content: c.prompt }] })
+      });
+      if (!res.ok) throw new Error();
+      el.innerHTML = '<div class="vc-ai-label">AI RESPONSE · LIVE</div><div id="vcs' + idx + '"></div>';
+      var streamEl = document.getElementById('vcs' + idx);
+      var reader = res.body.getReader(), decoder = new TextDecoder(), full = '', buf = '';
+      while (true) {
+        var rd = await reader.read();
+        if (rd.done) break;
+        buf += decoder.decode(rd.value, { stream: true });
+        var lines = buf.split('\n'); buf = lines.pop();
+        lines.forEach(function(line) {
+          if (!line.startsWith('data: ')) return;
+          var d = line.slice(6).trim();
+          if (d === '[DONE]') return;
+          try { var p = JSON.parse(d); if (p.type==='content_block_delta'&&p.delta&&p.delta.type==='text_delta') { full += p.delta.text; streamEl.innerHTML = full.replace(/\n/g,'<br>') + '<span class="vc-cursor"></span>'; } } catch(e) {}
+        });
+      }
+      var final = '<div class="vc-ai-label">AI-GENERATED · VEMAR AI</div><div class="vc-ai-body">' + parse(full) + '</div>';
+      cache[idx] = final;
+      el.innerHTML = final;
+    } catch(e) {
+      el.innerHTML = '<p class="vc-error">// ERROR: UNABLE TO LOAD AI RESPONSE. RETRY.</p>';
+    }
+  }
+
+  function build() {
+    var grid = document.getElementById('vemar-comp-grid');
+    if (!grid) return;
+    CARDS.forEach(function(c, i) {
+      var card = document.createElement('div');
+      card.className = 'vc-card';
+      card.setAttribute('tabindex','0');
+      card.setAttribute('role','button');
+      card.setAttribute('aria-expanded','false');
+      card.innerHTML =
+        '<div class="vc-card-top"><div class="vc-icon">' + c.icon + '</div><div class="vc-badge"><div class="vc-dot"></div>' + c.badge + '</div></div>' +
+        '<div class="vc-name">' + c.name + '</div>' +
+        '<div class="vc-sub">' + c.sub + '</div>' +
+        '<div class="vc-prompt">ASK AI WHAT THIS MEANS <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>' +
+        '<div class="vc-drawer" id="vcd' + i + '"><div class="vc-drawer-inner"><div id="vcai' + i + '"></div><a class="vc-learn" href="' + c.link + '" target="_blank" rel="noopener">&#x2197; ' + c.linklabel + '</a></div></div>';
+      var toggle = function() {
+        var drawer = document.getElementById('vcd' + i);
+        var aiEl = document.getElementById('vcai' + i);
+        var open = drawer.classList.contains('vc-open');
+        drawer.classList.toggle('vc-open', !open);
+        card.classList.toggle('vc-active', !open);
+        card.setAttribute('aria-expanded', String(!open));
+        if (!open) loadAI(i, aiEl);
+      };
+      card.addEventListener('click', toggle);
+      card.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); } });
+      grid.appendChild(card);
+    });
+  }
+
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', build); } else { build(); }
+})();
+</script>
