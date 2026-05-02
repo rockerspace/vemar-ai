@@ -1,6 +1,5 @@
 {
-  "buildCommand": null,
-  "installCommand": null,
+  "buildCommand": "npm install && npm run build",
   "outputDirectory": "dist",
   "rewrites": [{"source": "/(.*)", "destination": "/index.html"}]
 }
