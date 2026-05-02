@@ -125,10 +125,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .dash-grid{display:grid;grid-template-columns:1fr 320px;gap:1rem}
 @media(max-width:768px){.dash-grid{grid-template-columns:1fr}}
 
-.chart-bars{display:flex;align-items:flex-end;gap:3px;height:70px;margin-top:.75rem}
-.bar{flex:1;min-width:8px;transition:opacity var(--t)}
-.bar-cyan{background:var(--cyan);opacity:.7}
-.bar-red{background:var(--red);opacity:.8}
+.chart-bars{display:flex;align-items:flex-end;gap:4px;height:160px;margin-top:.75rem;padding:0 2px}
+.bar{flex:1;min-width:10px;border-radius:2px 2px 0 0;transition:opacity var(--t),height .6s ease}
+.bar-cyan{background:linear-gradient(to top,var(--cyan2),var(--cyan));opacity:.85}
+.bar-red{background:linear-gradient(to top,#cc1a2e,var(--red));opacity:.9}
 .bar:hover{opacity:1!important}
 
 .roadmap{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-top:2rem}
@@ -137,7 +137,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .road-title{font-size:14px;font-weight:700;letter-spacing:1px;margin-bottom:.5rem}
 .road-period{color:var(--text3);font-size:11px;margin-bottom:1rem}
 .road-item{display:flex;gap:8px;font-size:12px;color:var(--text2);margin-bottom:7px;align-items:flex-start}
-.road-item::before{content:'▸';color:var(--amber);font-size:9px;flex-shrink:0;margin-top:2px}
+.road-item::before{content:'â–¸';color:var(--amber);font-size:9px;flex-shrink:0;margin-top:2px}
 
 .market-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:2rem}
 .market-card{background:var(--bg3);border:1px solid var(--border);padding:1.5rem;text-align:center}
@@ -161,7 +161,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .plan-price span{font-size:13px;color:var(--text3);font-weight:400}
 .plan-desc{color:var(--text2);font-size:12px;margin:.75rem 0 1.25rem;line-height:1.6}
 .plan-feature{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);margin-bottom:7px}
-.plan-feature::before{content:'▸';color:var(--cyan);font-size:9px}
+.plan-feature::before{content:'â–¸';color:var(--cyan);font-size:9px}
 .plan-btn{width:100%;background:transparent;color:var(--cyan);border:1px solid var(--cyan);padding:10px;font-family:var(--font);font-size:11px;font-weight:700;letter-spacing:2px;cursor:pointer;margin-top:1.25rem;transition:all var(--t);text-transform:uppercase}
 .plan-btn:hover,.pricing-card.featured .plan-btn{background:var(--cyan);color:var(--bg)}
 
@@ -213,7 +213,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 
 footer{border-top:1px solid var(--border);padding:2.5rem;text-align:center;color:var(--text3);font-size:11px;letter-spacing:1px}
 
-/* ─── Smart UI Components ────────────────────────────────── */
+/* â”€â”€â”€ Smart UI Components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .threat-ticker{background:rgba(255,61,87,.05);border-top:1px solid rgba(255,61,87,.18);border-bottom:1px solid rgba(255,61,87,.18);overflow:hidden;height:34px;display:flex;align-items:center}
 .ticker-inner{display:flex;white-space:nowrap;animation:tickerScroll 42s linear infinite}
 .ticker-inner:hover{animation-play-state:paused}
