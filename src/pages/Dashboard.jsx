@@ -1,239 +1,222 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import './Dashboard.css'
+import { AnimatedCounter, LiveDot, showToast } from '../components/UIComponents'
 
-const NAV_ITEMS = [
-  { label: 'HOME', path: '/' },
-  { label: 'DASHBOARD', path: '/dashboard' },
-  { label: 'DETECT', path: '/detect' },
-  { label: 'BEHAVIORAL', path: '/behavioral' },
-  { label: 'IDENTITY', path: '/identity' },
-  { label: 'AI ANALYST', path: '/chat' },
-  { label: 'MARKET', path: '/market' },
-  { label: 'PRICING', path: '/pricing' },
-]
-
-const BARS = [
-  { day: 'MON', value: 55, today: false },
-  { day: 'TUE', value: 80, today: false },
-  { day: 'WED', value: 62, today: false },
-  { day: 'THU', value: 88, today: false },
-  { day: 'FRI', value: 72, today: false },
-  { day: 'SAT', value: 48, today: false },
-  { day: 'TODAY', value: 95, today: true },
-]
-
-const ALERTS = [
-  { id: 1, title: 'Voice clone — Instagram DM', meta: '@user · 2 min ago', severity: 'CRITICAL', dot: 'red' },
-  { id: 2, title: 'Deepfake video — YouTube', meta: 'Pending review · 14 min ago', severity: 'CRITICAL', dot: 'red' },
-  { id: 3, title: 'Behavioral anomaly — Login', meta: 'Synthetic bot · 1hr ago', severity: 'HIGH', dot: 'amber' },
-  { id: 4, title: 'Text impersonation — Telegram', meta: 'Phishing · 3hr ago', severity: 'MEDIUM', dot: 'green' },
-]
-
-const BREAKDOWN = [
-  { label: 'Voice Clones', pct: 42, color: '#ff3b5c' },
-  { label: 'Face Deepfakes', pct: 26, color: '#ffb700' },
-  { label: 'Behavioral Fraud', pct: 19, color: '#00e5ff' },
-  { label: 'Synthetic Identity', pct: 13, color: '#a855f7' },
+const THREATS = [
+  { name: 'Voice clone — Instagram DM', meta: '@user · 2 min ago', level: 'CRITICAL', color: 'var(--red)' },
+  { name: 'Deepfake video — YouTube', meta: 'Pending review · 14 min ago', level: 'CRITICAL', color: 'var(--red)' },
+  { name: 'Behavioral anomaly — Login', meta: 'Synthetic bot · 1hr ago', level: 'HIGH', color: 'var(--amber)' },
+  { name: 'Text impersonation — Telegram', meta: 'Phishing · 3hr ago', level: 'MEDIUM', color: 'var(--green)' },
 ]
 
 const ACTIVITY = [
-  { time: '02:14', action: 'AUTO-SCAN', detail: 'completed — 47 media items analyzed' },
-  { time: '01:58', action: 'BEHAVIORAL ALERT', detail: '— bot-like typing pattern flagged' },
-  { time: '01:32', action: 'TAKEDOWN FILED', detail: '— YouTube deepfake reported' },
-  { time: '00:47', action: 'WATERMARK TRACED', detail: '— clone origin identified' },
+  { time: '02:14', text: 'AUTO-SCAN completed — 47 media items analyzed', bold: 'AUTO-SCAN' },
+  { time: '01:58', text: 'BEHAVIORAL ALERT — bot-like typing pattern flagged', bold: 'BEHAVIORAL ALERT' },
+  { time: '01:32', text: 'TAKEDOWN FILED — YouTube deepfake reported', bold: 'TAKEDOWN FILED' },
+  { time: '00:47', text: 'WATERMARK TRACED — clone origin identified', bold: 'WATERMARK TRACED' },
+  { time: 'Yesterday', text: 'IDENTITY GRAPH — 7-node fraud cluster flagged', bold: 'IDENTITY GRAPH' },
 ]
 
-function Navbar({ active }) {
-  const navigate = useNavigate()
-  return (
-    <nav className="dash-nav">
-      <Link to="/" className="nav-logo">
-        <div className="logo-icon">🛡</div>
-        <span className="logo-text">VEMAR<span>.AI</span></span>
-      </Link>
-      <div className="nav-links">
-        {NAV_ITEMS.map(({ label, path }) => (
-          <Link
-            key={label}
-            to={path}
-            className={`nav-link ${path === active ? 'active' : ''}`}
-          >
-            {label}
-          </Link>
-        ))}
-      </div>
-      <button className="btn-login" onClick={() => navigate('/auth')}>LOGIN</button>
-    </nav>
-  )
-}
+const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'TODAY']
+const BASE_BARS = [42, 78, 55, 91, 64, 38, 76]
+
+const BREAKDOWN = [
+  { label: 'Voice Clones',      pct: 42, color: 'var(--red)'    },
+  { label: 'Face Deepfakes',    pct: 26, color: 'var(--amber)'  },
+  { label: 'Behavioral Fraud',  pct: 19, color: 'var(--purple)' },
+  { label: 'Synthetic Identity',pct: 13, color: 'var(--cyan)'   },
+]
 
 export default function Dashboard() {
-  const [threats, setThreats] = useState(53)
-  const [scans, setScans] = useState(1187)
-  const [blocked, setBlocked] = useState(2109)
-  const [refreshing, setRefreshing] = useState(false)
+  const [threatCount,  setThreatCount]  = useState(53)
+  const [scanCount,    setScanCount]    = useState(1187)
+  const [refreshKey,   setRefreshKey]   = useState(0)
+  const [bars,         setBars]         = useState(BASE_BARS)
+  const [barsVisible,  setBarsVisible]  = useState(false)
 
-  function handleRefresh() {
-    setRefreshing(true)
-    setTimeout(() => {
-      setThreats(t => t + Math.floor(Math.random() * 3))
-      setScans(s => s + Math.floor(Math.random() * 20))
-      setRefreshing(false)
-    }, 800)
+  // Animate bars in on mount
+  useEffect(() => {
+    const t = setTimeout(() => setBarsVisible(true), 100)
+    return () => clearTimeout(t)
+  }, [])
+
+  const doRefresh = () => {
+    setThreatCount(Math.floor(40 + Math.random() * 20))
+    setScanCount(1100 + Math.floor(Math.random() * 400))
+    setBars(BASE_BARS.map(b => Math.max(15, b + Math.floor((Math.random() - 0.5) * 20))))
+    setRefreshKey(k => k + 1)
+    showToast('Dashboard refreshed', 'success')
   }
 
+  const metrics = [
+    { val: threatCount, label: 'Active Threats',    color: 'var(--red)',    delta: '▲ 12% this week', up: true  },
+    { val: scanCount,   label: 'Scans Today',       color: 'var(--cyan)',   delta: '▼ 3%',            up: false },
+    { val: 2109,        label: 'Blocked / Month',   color: 'var(--green)',  delta: '▼ 8%',            up: false },
+    { val: '99.4',      label: 'Accuracy',          color: 'var(--amber)',  delta: '─ stable',         up: null, suffix: '%' },
+    { val: 312,         label: 'Behavioral Alerts', color: 'var(--purple)', delta: '▲ 5%',            up: true  },
+  ]
+
   return (
-    <div className="dash-page">
-      <Navbar active="/dashboard" />
+    <div className="page-enter" style={{ padding: '2rem' }}>
 
-      <main className="dash-main">
-        {/* ── PAGE HEADER ── */}
-        <div className="page-header">
-          <div>
-            <h1 className="page-title">THREAT DASHBOARD</h1>
-            <p className="page-sub">LIVE MONITORING ACTIVE</p>
-          </div>
-          <div className="header-actions">
-            <div className="live-badge">
-              <span className="pulse-dot" />
-              LIVE
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: 8 }}>
+        <div>
+          <h1 style={{ fontSize: '1.3rem', fontWeight: 700, letterSpacing: 2 }}>THREAT DASHBOARD</h1>
+          <p style={{ color: 'var(--text3)', fontSize: 10, letterSpacing: 2, marginTop: 3 }}>LIVE MONITORING ACTIVE</p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <LiveDot label="LIVE" />
+          <button className="btn-primary" style={{ padding: '7px 16px', fontSize: 10 }} onClick={doRefresh}>
+            ⟳ REFRESH
+          </button>
+        </div>
+      </div>
+
+      {/* Metrics */}
+      <section className="metrics-row" aria-label="Key metrics">
+        {metrics.map((m, i) => (
+          <article key={m.label} className={`metric-card fade-in fade-in-${i + 1}`}>
+            <div className="metric-val" style={{ color: m.color }}>
+              <AnimatedCounter key={refreshKey + m.label} target={m.val} suffix={m.suffix || ''} />
             </div>
-            <button className="btn-refresh" onClick={handleRefresh} disabled={refreshing}>
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M13.5 8A5.5 5.5 0 1 1 8 2.5" strokeLinecap="round"/>
-                <path d="M8 2.5l2 2-2 2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              {refreshing ? 'REFRESHING...' : 'REFRESH'}
-            </button>
-          </div>
+            <div className="metric-label">{m.label}</div>
+            <div style={{
+              fontSize: 10, marginTop: 4, letterSpacing: 1,
+              color: m.up === true ? 'var(--red)' : m.up === false ? 'var(--green)' : 'var(--text3)'
+            }}>{m.delta}</div>
+          </article>
+        ))}
+      </section>
+
+      <div className="dash-grid">
+        {/* Left column */}
+        <div>
+
+          {/* Chart */}
+          <section className="panel" aria-label="Detection volume last 7 days">
+            <h2 className="panel-title">DETECTION VOLUME — LAST 7 DAYS</h2>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-end',
+                gap: 6,
+                height: 160,
+                marginTop: '0.75rem',
+                padding: '0 4px',
+                position: 'relative',
+              }}
+            >
+              {/* Grid lines */}
+              {[25, 50, 75, 100].map(pct => (
+                <div key={pct} style={{
+                  position: 'absolute',
+                  left: 0, right: 0,
+                  bottom: `${pct}%`,
+                  height: 1,
+                  background: 'var(--border)',
+                  opacity: 0.4,
+                  pointerEvents: 'none',
+                }} />
+              ))}
+              {bars.map((v, i) => (
+                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
+                  <div style={{
+                    width: '100%',
+                    height: barsVisible ? `${v}%` : '0%',
+                    background: i === 6
+                      ? 'linear-gradient(to top, #cc1a2e, var(--red))'
+                      : 'linear-gradient(to top, var(--cyan2), var(--cyan))',
+                    opacity: i === 6 ? 0.9 : 0.8,
+                    borderRadius: '2px 2px 0 0',
+                    transition: `height 0.8s ease ${i * 0.08}s`,
+                    position: 'relative',
+                    cursor: 'pointer',
+                    minHeight: 4,
+                  }}
+                  title={`${DAYS[i]}: ${v} detections`}
+                  onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.filter = 'brightness(1.15)' }}
+                  onMouseLeave={e => { e.currentTarget.style.opacity = i === 6 ? '0.9' : '0.8'; e.currentTarget.style.filter = 'none' }}
+                  />
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: 6 }}>
+              {DAYS.map(d => (
+                <span key={d} style={{ fontSize: 10, color: d === 'TODAY' ? 'var(--red)' : 'var(--text3)', letterSpacing: 1, flex: 1, textAlign: 'center' }}>{d}</span>
+              ))}
+            </div>
+          </section>
+
+          {/* Threat alerts */}
+          <section className="panel" aria-label="Active threat alerts">
+            <h2 className="panel-title">ACTIVE THREAT ALERTS</h2>
+            <ul style={{ listStyle: 'none' }}>
+              {THREATS.map(t => (
+                <li key={t.name} className="threat-item">
+                  <span className="threat-dot" style={{ background: t.color }} />
+                  <div className="threat-info">
+                    <div className="threat-name">{t.name}</div>
+                    <div className="threat-meta">{t.meta}</div>
+                  </div>
+                  <span className={`threat-level level-${t.level.toLowerCase()}`}>{t.level}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
 
-        {/* ── STAT CARDS ── */}
-        <div className="stats-row">
-          <div className="stat-card red">
-            <div className="stat-val red">{threats.toLocaleString()}</div>
-            <div className="stat-label">ACTIVE THREATS</div>
-            <div className="stat-delta delta-up">▲ 12% this week</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-val cyan">{scans.toLocaleString()}</div>
-            <div className="stat-label">SCANS TODAY</div>
-            <div className="stat-delta delta-dn">▼ 3%</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-val green">{blocked.toLocaleString()}</div>
-            <div className="stat-label">BLOCKED / MONTH</div>
-            <div className="stat-delta delta-dn">▼ 8%</div>
-          </div>
-          <div className="stat-card amber">
-            <div className="stat-val amber">99.4%</div>
-            <div className="stat-label">ACCURACY</div>
-            <div className="stat-delta delta-flat">— stable</div>
-          </div>
-          <div className="stat-card purple">
-            <div className="stat-val purple">312</div>
-            <div className="stat-label">BEHAVIORAL ALERTS</div>
-            <div className="stat-delta delta-up">▲ 5%</div>
-          </div>
-        </div>
+        {/* Right column */}
+        <div>
 
-        {/* ── BOTTOM GRID ── */}
-        <div className="content-grid">
-
-          {/* LEFT COLUMN */}
-          <div className="left-col">
-
-            {/* CHART PANEL */}
-            <div className="panel">
-              <div className="panel-head">
-                <span className="panel-title">DETECTION VOLUME — LAST 7 DAYS</span>
-              </div>
-              <div className="panel-body">
-                <div className="bars">
-                  {BARS.map(({ day, value, today }) => (
-                    <div className="bar-col" key={day}>
-                      <div
-                        className={`bar ${today ? 'today' : ''}`}
-                        style={{ height: `${value}%` }}
-                        title={`${value} detections`}
-                      />
-                      <span className="bar-day">{day}</span>
-                    </div>
-                  ))}
+          {/* Breakdown */}
+          <section className="panel" aria-label="Breakdown by threat type">
+            <h2 className="panel-title">BREAKDOWN BY TYPE</h2>
+            {BREAKDOWN.map(({ label, pct, color }) => (
+              <div key={label} style={{ marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text2)', letterSpacing: 0.5 }}>{label}</span>
+                  <span style={{ fontSize: 12, color, fontWeight: 700, letterSpacing: 1 }}>{pct}%</span>
+                </div>
+                {/* Track */}
+                <div style={{
+                  width: '100%',
+                  height: 6,
+                  background: 'var(--bg)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 3,
+                  overflow: 'hidden',
+                }}>
+                  {/* Fill */}
+                  <div style={{
+                    height: '100%',
+                    width: `${pct}%`,
+                    background: color,
+                    borderRadius: 3,
+                    opacity: 0.85,
+                    transition: 'width 1.2s ease',
+                  }} />
                 </div>
               </div>
-            </div>
+            ))}
+          </section>
 
-            {/* ALERTS PANEL */}
-            <div className="panel" style={{ marginTop: 20 }}>
-              <div className="panel-head">
-                <span className="panel-title">ACTIVE THREAT ALERTS</span>
-              </div>
-              <div className="alert-list">
-                {ALERTS.map(alert => (
-                  <div className="alert-item" key={alert.id}>
-                    <div className="alert-left">
-                      <span className={`alert-dot dot-${alert.dot}`} />
-                      <div>
-                        <div className="alert-title">{alert.title}</div>
-                        <div className="alert-meta">{alert.meta}</div>
-                      </div>
-                    </div>
-                    <span className={`badge badge-${alert.severity.toLowerCase()}`}>
-                      {alert.severity}
-                    </span>
+          {/* Recent activity */}
+          <section className="panel" aria-label="Recent activity log">
+            <h2 className="panel-title">RECENT ACTIVITY</h2>
+            <ul style={{ listStyle: 'none' }}>
+              {ACTIVITY.map((a, i) => (
+                <li key={i} className="activity-item">
+                  <time className="act-time">{a.time}</time>
+                  <div className="act-text" style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.5 }}>
+                    <strong style={{ color: 'var(--cyan)' }}>{a.bold}</strong>
+                    {a.text.slice(a.bold.length)}
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT COLUMN */}
-          <div className="right-col">
-
-            {/* BREAKDOWN PANEL */}
-            <div className="panel">
-              <div className="panel-head">
-                <span className="panel-title">BREAKDOWN BY TYPE</span>
-              </div>
-              <div className="panel-body">
-                {BREAKDOWN.map(({ label, pct, color }) => (
-                  <div className="breakdown-row" key={label}>
-                    <div className="breakdown-top">
-                      <span className="breakdown-label">{label}</span>
-                      <span className="breakdown-pct" style={{ color }}>{pct}%</span>
-                    </div>
-                    <div className="breakdown-track">
-                      <div
-                        className="breakdown-fill"
-                        style={{ width: `${pct}%`, background: color }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* ACTIVITY PANEL */}
-            <div className="panel" style={{ marginTop: 20 }}>
-              <div className="panel-head">
-                <span className="panel-title">RECENT ACTIVITY</span>
-              </div>
-              <div className="panel-body activity-list">
-                {ACTIVITY.map(({ time, action, detail }) => (
-                  <div className="activity-row" key={time}>
-                    <span className="activity-time">{time}</span>
-                    <span className="activity-text">
-                      <strong>{action}</strong>{detail}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
-      </main>
+      </div>
     </div>
   )
 }
