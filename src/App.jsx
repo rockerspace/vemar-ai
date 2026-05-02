@@ -8,11 +8,12 @@ import Chat from './Chat'
 import Market from './pages/Market'
 import Pricing from './pages/Pricing'
 import Auth from './pages/Auth'
+import Navbar from './components/Navbar'
 
 export default function App() {
   return (
     
-      <Routes>
+      <><Navbar /><Routes>
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/detect" element={<Detect />} />
@@ -24,7 +25,7 @@ export default function App() {
         <Route path="/auth" element={<Auth />} />
         {/* catch-all: redirect unknown paths to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      </Routes></>
     
   )
 }
