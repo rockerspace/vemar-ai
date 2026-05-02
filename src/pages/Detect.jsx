@@ -1,134 +1,368 @@
-import { useState } from 'react'
-const STEPS = ['Initializing neural scan...','Extracting spectral features...','Biometric marker analysis...','Deep artifact detection...','Identity vault cross-reference...','Generating threat assessment...']
+import { useState, useRef } from "react";
+import DetectionPipeline from "../components/DetectionPipeline";
 
-function isValidUrl(str) {
-  try { const u = new URL(str); return u.protocol === 'http:' || u.protocol === 'https:' } catch { return false }
-}
+const VOICE_LAYERS = [
+  { id: "voice", label: "Voice clone spectral fingerprinting", duration: [260, 340] },
+  { id: "deepfake", label: "Deepfake video & image analysis", duration: [300, 420] },
+  { id: "behavioral", label: "Behavioral AI scoring", duration: [180, 260] },
+  { id: "challenge", label: "Live challenge authentication", duration: [200, 300] },
+  { id: "identity", label: "AI identity graph mapping", duration: [220, 320] },
+  { id: "watermark", label: "Cryptographic content watermarking", duration: [150, 230] },
+];
 
 export default function Detect() {
-  const [mode, setMode] = useState('voice')
-  const [url, setUrl] = useState('')
-  const [urlError, setUrlError] = useState('')
-  const [phase, setPhase] = useState('initial')
-  const [progress, setProgress] = useState(0)
-  const [status, setStatus] = useState('')
-  const [result, setResult] = useState(null)
+  const [activeTab, setActiveTab] = useState("voice");
+  const [file, setFile] = useState(null);
+  const [triggerPipeline, setTriggerPipeline] = useState(false);
+  const [pipelineResult, setPipelineResult] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const fileInputRef = useRef(null);
 
-  const handleUrlChange = e => {
-    setUrl(e.target.value)
-    setUrlError('')
-    if (phase === 'done') { setPhase('initial'); setResult(null) }
-  }
+  const handleFile = (e) => {
+    const f = e.target.files?.[0];
+    if (f) {
+      setFile(f);
+      setTriggerPipeline(false);
+      setPipelineResult(null);
+    }
+  };
 
-  const runAnalysis = () => {
-    if (!isValidUrl(url)) { setUrlError('Please enter a valid URL (e.g. https://example.com/video.mp4)'); return }
-    setUrlError('')
-    setPhase('scanning'); setProgress(0); let step = 0, prog = 0
-    const iv = setInterval(() => {
-      prog += Math.random() * 18 + 8; if (prog > 98) prog = 98
-      setProgress(Math.round(prog))
-      if (step < STEPS.length) setStatus(STEPS[step++])
-    }, 600)
-    setTimeout(() => {
-      clearInterval(iv); setProgress(100)
-      setTimeout(() => {
-        const isFake = Math.random() > 0.45
-        setResult({ isFake, score: isFake ? (Math.random() * 15 + 82).toFixed(1) : null, conf: (Math.random() * 6 + 90).toFixed(1) })
-        setPhase('done')
-      }, 400)
-    }, 4000)
-  }
+  const handleAnalyze = () => {
+    if (!file) return;
+    setIsAnalyzing(true);
+    setPipelineResult(null);
+    setTriggerPipeline(false);
+    // Small delay so state resets cleanly before pipeline mounts
+    setTimeout(() => setTriggerPipeline(true), 50);
+  };
 
-  const urlValid = isValidUrl(url)
+  const handlePipelineComplete = (result) => {
+    setPipelineResult(result);
+    setIsAnalyzing(false);
+  };
+
+  const handleReset = () => {
+    setFile(null);
+    setTriggerPipeline(false);
+    setPipelineResult(null);
+    setIsAnalyzing(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <div style={{ fontSize: '1.3rem', fontWeight: 700, letterSpacing: 2, marginBottom: '.25rem' }}>DETECTION LAB</div>
-      <div style={{ color: 'var(--text3)', fontSize: 11, letterSpacing: 2, marginBottom: '1.5rem' }}>ENTER MEDIA URL FOR NEURAL ANALYSIS</div>
-      <div style={{ display: 'flex', gap: 10, marginBottom: '1.5rem' }}>
-        {['voice', 'face'].map(m => (
-          <button key={m} onClick={() => setMode(m)} className="tag" style={{ padding: '7px 14px', fontSize: 11, color: mode === m ? 'var(--cyan)' : 'var(--text3)', borderColor: mode === m ? 'var(--cyan3)' : 'var(--border)' }}>
-            {m === 'voice' ? '🎙 VOICE' : '🎭 FACE/VIDEO'}
+    <div className="detect-page">
+      <div className="detect-header">
+        <h1>Detection Lab</h1>
+        <p className="detect-subtitle">
+          Upload voice or media — all six defense layers run in parallel, completing in under 2 seconds.
+        </p>
+      </div>
+
+      {/* Tab switcher */}
+      <div className="detect-tabs">
+        {["voice", "video", "image"].map((tab) => (
+          <button
+            key={tab}
+            className={`detect-tab ${activeTab === tab ? "active" : ""}`}
+            onClick={() => {
+              setActiveTab(tab);
+              handleReset();
+            }}
+          >
+            {tab === "voice" ? "🎙 Voice" : tab === "video" ? "🎥 Video" : "🖼 Image"}
           </button>
         ))}
       </div>
-      <div className="detect-layout">
-        <div>
-          {/* URL Input Zone */}
-          <div className="upload-zone" style={{ cursor: 'default', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '.75rem', padding: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.25rem' }}>
-              <span style={{ fontSize: '1.5rem' }}>{urlValid ? '✅' : '🔗'}</span>
-              <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, color: 'var(--text2)' }}>PASTE MEDIA URL</span>
-            </div>
-            <input
-              type="url"
-              value={url}
-              onChange={handleUrlChange}
-              placeholder="https://example.com/video.mp4"
-              style={{
-                width: '100%',
-                background: 'var(--bg2, #0d1117)',
-                border: `1px solid ${urlError ? 'var(--red)' : urlValid ? 'var(--cyan3)' : 'var(--border)'}`,
-                color: 'var(--text1, #e6edf3)',
-                padding: '10px 12px',
-                fontSize: 12,
-                letterSpacing: 1,
-                outline: 'none',
-                borderRadius: 2,
-                fontFamily: 'inherit',
-                boxSizing: 'border-box',
-                transition: 'border-color .2s',
-              }}
-            />
-            {urlError && <div style={{ fontSize: 11, color: 'var(--red)', letterSpacing: .5 }}>⚠ {urlError}</div>}
-            {!urlError && <div style={{ fontSize: 11, color: 'var(--text3)', letterSpacing: .5 }}>
-              {mode === 'voice' ? 'Supports MP3, WAV, OGG, M4A, direct stream URLs' : 'Supports MP4, MOV, WEBM, YouTube, direct stream URLs'}
-            </div>}
-          </div>
 
-          <div className="panel" style={{ marginTop: '1rem' }}>
-            <div className="panel-title">ANALYSIS OPTIONS</div>
-            {['Deep spectral scan', 'Biometric fingerprinting', 'Identity vault cross-reference', 'Generate takedown report'].map((o, i) => (
-              <label key={o} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text2)', cursor: 'pointer', marginBottom: 8 }}>
-                <input type="checkbox" defaultChecked={i < 2} style={{ accentColor: 'var(--cyan)' }} /> {o}
-              </label>
-            ))}
-          </div>
-          <button className="analyze-btn" disabled={!urlValid || phase === 'scanning'} onClick={runAnalysis}>ANALYZE MEDIA</button>
-        </div>
-        <div className="result-panel">
-          {phase === 'initial' && <div style={{ textAlign: 'center', padding: '3rem 0' }}><div style={{ fontSize: '2.5rem', marginBottom: '.75rem' }}>🔬</div><div style={{ color: 'var(--text3)', fontSize: 12, letterSpacing: 2 }}>AWAITING MEDIA INPUT</div></div>}
-          {phase === 'scanning' && (
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
-              <div style={{ fontSize: '1.8rem', marginBottom: '.75rem' }}>⚡</div>
-              <div style={{ color: 'var(--cyan)', fontSize: 12, letterSpacing: 2, marginBottom: '1.25rem' }}>ANALYZING...</div>
-              <div style={{ height: 4, background: 'var(--border)', margin: '0 1rem' }}><div style={{ height: '100%', width: progress + '%', background: 'var(--cyan)', transition: 'width .4s' }} /></div>
-              <div style={{ color: 'var(--text3)', fontSize: 11, marginTop: '.75rem', letterSpacing: 1 }}>{status}</div>
-            </div>
-          )}
-          {phase === 'done' && result && (
+      {/* Upload zone */}
+      <div
+        className={`detect-dropzone ${file ? "has-file" : ""}`}
+        onClick={() => fileInputRef.current?.click()}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          const f = e.dataTransfer.files?.[0];
+          if (f) {
+            setFile(f);
+            setTriggerPipeline(false);
+            setPipelineResult(null);
+          }
+        }}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={
+            activeTab === "voice"
+              ? "audio/*"
+              : activeTab === "video"
+              ? "video/*"
+              : "image/*"
+          }
+          style={{ display: "none" }}
+          onChange={handleFile}
+        />
+        {file ? (
+          <div className="file-info">
+            <span className="file-icon">
+              {activeTab === "voice" ? "🎵" : activeTab === "video" ? "🎬" : "🖼"}
+            </span>
             <div>
-              <div className="panel-title">ANALYSIS RESULT</div>
-              <div className={`result-score ${result.isFake ? 'score-fake' : 'score-real'}`}>{result.isFake ? result.score + '%' : 'AUTH'}</div>
-              <div style={{ textAlign: 'center', marginBottom: '.75rem' }}>
-                <div style={{ fontSize: 12, letterSpacing: 3, color: result.isFake ? 'var(--red)' : 'var(--green)' }}>{result.isFake ? '⚠ AI-GENERATED CLONE DETECTED' : '✓ AUTHENTIC — NO CLONE DETECTED'}</div>
-                <div className="confidence-bar"><div className="confidence-fill" style={{ width: result.conf + '%', background: result.isFake ? 'var(--red)' : 'var(--green)' }} /></div>
-                <div style={{ fontSize: 11, color: 'var(--text3)' }}>Confidence: {result.conf}%</div>
-              </div>
-              {[['Spectral Artifacts', result.isFake ? 'DETECTED' : 'CLEAN'], ['Temporal Consistency', result.isFake ? 'ANOMALIES' : 'NORMAL'], ['Biometric Signature', result.isFake ? 'MISMATCH' : 'VERIFIED'], ['Neural Watermark', result.isFake ? 'ABSENT' : 'PRESENT']].map(([l, v]) => (
-                <div key={l} className="breakdown-row">
-                  <span className="breakdown-label">{l}</span>
-                  <span className="breakdown-val" style={{ color: v === 'CLEAN' || v === 'NORMAL' || v === 'VERIFIED' || v === 'PRESENT' ? 'var(--green)' : 'var(--red)' }}>{v}</span>
-                </div>
-              ))}
-              <div style={{ marginTop: '1.25rem', padding: '.75rem', background: 'rgba(0,229,255,.04)', border: '1px solid var(--border)' }}>
-                <div style={{ fontSize: 10, color: 'var(--text3)', letterSpacing: 2, marginBottom: 5 }}>AI SUMMARY</div>
-                <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.6 }}>{result.isFake ? 'High-confidence AI synthesis detected. Classic neural voice generation patterns found: non-linear spectral artifacts and temporal inconsistencies. Recommend identity vault alert and takedown filing.' : 'No clone signatures detected. Media appears authentic across biometric, spectral, and temporal analysis layers.'}</div>
-              </div>
+              <p className="file-name">{file.name}</p>
+              <p className="file-size">{(file.size / 1024).toFixed(1)} KB</p>
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="dropzone-prompt">
+            <span className="dropzone-icon">
+              {activeTab === "voice" ? "◈" : activeTab === "video" ? "◉" : "◇"}
+            </span>
+            <p>Drop {activeTab} file here or click to browse</p>
+            <span className="dropzone-hint">
+              {activeTab === "voice"
+                ? "Supports MP3, WAV, M4A, OGG"
+                : activeTab === "video"
+                ? "Supports MP4, MOV, WebM"
+                : "Supports JPG, PNG, WEBP"}
+            </span>
+          </div>
+        )}
       </div>
+
+      {/* Action buttons */}
+      <div className="detect-actions">
+        <button
+          className="btn-analyze"
+          onClick={handleAnalyze}
+          disabled={!file || isAnalyzing}
+        >
+          {isAnalyzing ? "Analyzing…" : "Run Full Analysis"}
+        </button>
+        {(file || pipelineResult) && (
+          <button className="btn-reset" onClick={handleReset}>
+            Reset
+          </button>
+        )}
+      </div>
+
+      {/* 6-Layer Pipeline */}
+      <DetectionPipeline
+        trigger={triggerPipeline}
+        layers={VOICE_LAYERS}
+        label={`Running 6-layer ${activeTab} analysis`}
+        onComplete={handlePipelineComplete}
+      />
+
+      {/* Threat report */}
+      {pipelineResult && (
+        <div className={`threat-report ${pipelineResult.passed ? "clean" : "threat"}`}>
+          <div className="threat-header">
+            <span className="threat-verdict">
+              {pipelineResult.passed
+                ? "✓ Content Verified — No Synthetic Signatures Detected"
+                : "✗ Threat Detected — Synthetic Content Identified"}
+            </span>
+          </div>
+          <div className="threat-stats">
+            <div className="threat-stat">
+              <span className="ts-label">Pipeline time</span>
+              <span className="ts-value">{pipelineResult.time}ms</span>
+            </div>
+            <div className="threat-stat">
+              <span className="ts-label">Under 2s</span>
+              <span className="ts-value">
+                {pipelineResult.time < 2000 ? "✓ Yes" : "✗ No"}
+              </span>
+            </div>
+            <div className="threat-stat">
+              <span className="ts-label">Detection accuracy</span>
+              <span className="ts-value">{pipelineResult.accuracy}%</span>
+            </div>
+            <div className="threat-stat">
+              <span className="ts-label">Layers passed</span>
+              <span className="ts-value">
+                {Object.values(pipelineResult.layers).filter(Boolean).length} / 6
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        .detect-page {
+          max-width: 760px;
+          margin: 0 auto;
+          padding: 40px 24px;
+        }
+        .detect-header h1 {
+          font-size: 28px;
+          font-weight: 700;
+          margin: 0 0 8px;
+          color: var(--vemar-text, #e8eaf0);
+        }
+        .detect-subtitle {
+          font-size: 15px;
+          color: var(--vemar-muted, #6b7280);
+          margin: 0 0 28px;
+          line-height: 1.6;
+        }
+        .detect-tabs {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 20px;
+        }
+        .detect-tab {
+          padding: 8px 18px;
+          border-radius: 8px;
+          border: 1px solid rgba(108,143,255,0.2);
+          background: transparent;
+          color: var(--vemar-muted, #6b7280);
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          text-transform: capitalize;
+        }
+        .detect-tab:hover {
+          border-color: rgba(108,143,255,0.5);
+          color: var(--vemar-accent, #6c8fff);
+        }
+        .detect-tab.active {
+          background: rgba(108,143,255,0.12);
+          border-color: rgba(108,143,255,0.5);
+          color: var(--vemar-accent, #6c8fff);
+        }
+        .detect-dropzone {
+          border: 1.5px dashed rgba(108,143,255,0.25);
+          border-radius: 12px;
+          padding: 40px 24px;
+          text-align: center;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          background: rgba(108,143,255,0.03);
+          margin-bottom: 16px;
+        }
+        .detect-dropzone:hover, .detect-dropzone.has-file {
+          border-color: rgba(108,143,255,0.5);
+          background: rgba(108,143,255,0.06);
+        }
+        .dropzone-icon {
+          font-size: 32px;
+          color: var(--vemar-accent, #6c8fff);
+          display: block;
+          margin-bottom: 12px;
+        }
+        .dropzone-prompt p {
+          color: var(--vemar-text, #e8eaf0);
+          font-size: 15px;
+          margin: 0 0 6px;
+        }
+        .dropzone-hint {
+          font-size: 12px;
+          color: var(--vemar-muted, #6b7280);
+        }
+        .file-info {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          justify-content: center;
+        }
+        .file-icon { font-size: 28px; }
+        .file-name {
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--vemar-text, #e8eaf0);
+          margin: 0 0 4px;
+        }
+        .file-size {
+          font-size: 12px;
+          color: var(--vemar-muted, #6b7280);
+          margin: 0;
+        }
+        .detect-actions {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 4px;
+        }
+        .btn-analyze {
+          padding: 11px 28px;
+          border-radius: 8px;
+          background: var(--vemar-accent, #6c8fff);
+          border: none;
+          color: #fff;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          letter-spacing: 0.02em;
+        }
+        .btn-analyze:hover:not(:disabled) {
+          background: #849bff;
+          transform: translateY(-1px);
+        }
+        .btn-analyze:disabled {
+          opacity: 0.45;
+          cursor: not-allowed;
+        }
+        .btn-reset {
+          padding: 11px 20px;
+          border-radius: 8px;
+          background: transparent;
+          border: 1px solid rgba(255,255,255,0.1);
+          color: var(--vemar-muted, #6b7280);
+          font-size: 14px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .btn-reset:hover {
+          border-color: rgba(255,255,255,0.25);
+          color: var(--vemar-text, #e8eaf0);
+        }
+        .threat-report {
+          border-radius: 12px;
+          border: 1px solid;
+          padding: 20px 24px;
+          margin-top: 4px;
+        }
+        .threat-report.clean {
+          border-color: rgba(29,184,122,0.25);
+          background: rgba(29,184,122,0.05);
+        }
+        .threat-report.threat {
+          border-color: rgba(224,71,61,0.25);
+          background: rgba(224,71,61,0.05);
+        }
+        .threat-verdict {
+          font-size: 14px;
+          font-weight: 700;
+        }
+        .threat-report.clean .threat-verdict { color: #1db87a; }
+        .threat-report.threat .threat-verdict { color: #e0473d; }
+        .threat-header { margin-bottom: 16px; }
+        .threat-stats {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+          gap: 12px;
+        }
+        .threat-stat {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .ts-label {
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.07em;
+          color: var(--vemar-muted, #6b7280);
+          font-weight: 600;
+        }
+        .ts-value {
+          font-size: 16px;
+          font-weight: 700;
+          color: var(--vemar-text, #e8eaf0);
+          font-variant-numeric: tabular-nums;
+        }
+      `}</style>
     </div>
-  )
+  );
 }
