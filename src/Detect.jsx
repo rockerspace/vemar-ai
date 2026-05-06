@@ -32,37 +32,56 @@ export default function Detect() {
     if (phase === 'done') { setPhase('initial'); setResult(null) }
   }
 
-  const runAnalysis = () => {
+  const runAnalysis = async () => {
     if (!urlValid) { setUrlError('Please enter a valid URL (https://...)'); return }
     setUrlError('')
     setPhase('scanning')
     setProgress(0)
-    let step = 0, prog = 0
+
+    // Animate progress bar while waiting for real API response
+    let prog = 0
+    let step = 0
     const iv = setInterval(() => {
-      prog += Math.random() * 18 + 8
-      if (prog > 98) prog = 98
+      prog += Math.random() * 12 + 5
+      if (prog > 90) prog = 90
       setProgress(Math.round(prog))
       if (step < STEPS.length) setStatus(STEPS[step++])
-    }, 600)
-    setTimeout(() => {
+    }, 500)
+
+    try {
+      const response = await fetch('/api/detect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: url.split('/').pop() || 'media-file',
+          fileType: mode === 'voice' ? 'audio' : 'video',
+          fileSize: null,
+          analysisType: mode,
+        }),
+      })
+
+      const data = await response.json()
       clearInterval(iv)
       setProgress(100)
+
+      if (!data.success) throw new Error(data.error || 'Analysis failed')
+
+      const { verdict, confidence, detectionScore, signals, recommendation } = data.result
+      const isFake = verdict === 'DEEPFAKE' || verdict === 'SUSPICIOUS'
+
       setTimeout(() => {
-        const isFake = Math.random() > 0.45
-        const res = { isFake, score: isFake ? (Math.random() * 15 + 82).toFixed(1) : null, conf: (Math.random() * 6 + 90).toFixed(1) }
-        setResult(res)
+        setResult({ isFake, score: detectionScore.toFixed(1), conf: confidence.toFixed(1), signals, recommendation, verdict })
         setPhase('done')
         showToast(isFake ? '⚠ AI-generated content detected' : '✓ Content appears authentic', isFake ? 'error' : 'success')
       }, 400)
-    }, 4000)
-  }
 
-  const breakdown = result ? [
-    ['Spectral Artifacts', result.isFake ? 'DETECTED' : 'CLEAN'],
-    ['Temporal Consistency', result.isFake ? 'ANOMALIES' : 'NORMAL'],
-    ['Biometric Signature', result.isFake ? 'MISMATCH' : 'VERIFIED'],
-    ['Neural Watermark', result.isFake ? 'ABSENT' : 'PRESENT'],
-  ] : []
+    } catch (err) {
+      clearInterval(iv)
+      setPhase('initial')
+      setProgress(0)
+      showToast('Analysis failed: ' + err.message, 'error')
+    }
+  }
 
   return (
     <div className="page-enter" style={{ padding: '2rem' }}>
@@ -234,12 +253,14 @@ export default function Detect() {
               </div>
 
               <dl>
-                {breakdown.map(([l, v]) => {
-                  const good = ['CLEAN', 'NORMAL', 'VERIFIED', 'PRESENT'].includes(v)
+                {(result.signals || []).map(({ name, detail, severity }) => {
+                  const good = severity === 'LOW'
                   return (
-                    <div key={l} className="breakdown-row">
-                      <dt className="breakdown-label">{l}</dt>
-                      <dd className="breakdown-val" style={{ color: good ? 'var(--green)' : 'var(--red)' }}>{v}</dd>
+                    <div key={name} className="breakdown-row">
+                      <dt className="breakdown-label">{name}</dt>
+                      <dd className="breakdown-val" style={{ color: severity === 'HIGH' ? 'var(--red)' : severity === 'MEDIUM' ? 'var(--yellow, orange)' : 'var(--green)' }}>
+                        {detail}
+                      </dd>
                     </div>
                   )
                 })}
@@ -248,9 +269,7 @@ export default function Detect() {
               <div style={{ marginTop: '1.25rem', padding: '.75rem', background: 'rgba(0,229,255,.04)', border: '1px solid var(--border)' }}>
                 <p style={{ fontSize: 10, color: 'var(--text3)', letterSpacing: 2, marginBottom: 5 }}>AI SUMMARY</p>
                 <p style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.6 }}>
-                  {result.isFake
-                    ? 'High-confidence AI synthesis detected. Classic neural voice generation patterns found: non-linear spectral artifacts and temporal inconsistencies. Recommend identity vault alert and takedown filing.'
-                    : 'No clone signatures detected. Media appears authentic across biometric, spectral, and temporal analysis layers.'}
+                  {result.recommendation}
                 </p>
               </div>
 
