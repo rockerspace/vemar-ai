@@ -1,116 +1,125 @@
-import { useState } from 'react'
-import { ScanProgress, showToast } from '../components/UIComponents'
+import { useState, useRef } from 'react';
 
-const STEPS = [
-  'Initializing neural scan...',
-  'Extracting spectral features...',
-  'Biometric marker analysis...',
-  'Deep artifact detection...',
-  'Identity vault cross-reference...',
-  'Generating threat assessment...',
-]
+const VERDICT_COLOR = {
+  AUTHENTIC: '#00e887',
+  DEEPFAKE: '#ff3b5c',
+  SUSPICIOUS: '#ffb300',
+};
 
 function isValidUrl(str) {
-  try { const u = new URL(str); return u.protocol === 'http:' || u.protocol === 'https:' } catch { return false }
+  try {
+    const u = new URL(str);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
 }
 
 export default function Detect() {
-  const [mode, setMode] = useState('voice')
-  const [url, setUrl] = useState('')
-  const [urlError, setUrlError] = useState('')
-  const [phase, setPhase] = useState('initial')
-  const [progress, setProgress] = useState(0)
-  const [status, setStatus] = useState('')
-  const [result, setResult] = useState(null)
-  const [options, setOptions] = useState({ spectral: true, biometric: true, vault: false, report: false })
+  const [inputMode, setInputMode] = useState('file'); // 'file' | 'url'
+  const [file, setFile] = useState(null);
+  const [url, setUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+  const inputRef = useRef();
 
-  const urlValid = isValidUrl(url)
+  const urlValid = isValidUrl(url);
+  const canRun = inputMode === 'file' ? !!file : urlValid;
 
-  const handleUrlChange = e => {
-    setUrl(e.target.value)
-    setUrlError('')
-    if (phase === 'done') { setPhase('initial'); setResult(null) }
-  }
+  const handleFile = (f) => {
+    setFile(f);
+    setResult(null);
+    setError(null);
+  };
 
-  const runAnalysis = async () => {
-    if (!urlValid) { setUrlError('Please enter a valid URL (https://...)'); return }
-    setUrlError('')
-    setPhase('scanning')
-    setProgress(0)
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  };
 
-    // Animate progress bar while waiting for real API response
-    let prog = 0
-    let step = 0
-    const iv = setInterval(() => {
-      prog += Math.random() * 12 + 5
-      if (prog > 90) prog = 90
-      setProgress(Math.round(prog))
-      if (step < STEPS.length) setStatus(STEPS[step++])
-    }, 500)
+  const handleUrlChange = (e) => {
+    setUrl(e.target.value);
+    setResult(null);
+    setError(null);
+  };
+
+  const switchMode = (mode) => {
+    setInputMode(mode);
+    setResult(null);
+    setError(null);
+    setFile(null);
+    setUrl('');
+  };
+
+  const runDetection = async () => {
+    if (!canRun) return;
+    setLoading(true);
+    setError(null);
+    setResult(null);
 
     try {
-      const response = await fetch('/api/detect', {
+      const body = inputMode === 'url'
+        ? {
+            mediaUrl: url,
+            fileName: url.split('/').pop() || 'media',
+            fileType: 'url',
+            analysisType: 'media',
+          }
+        : {
+            fileName: file.name,
+            fileType: file.type,
+            fileSize: file.size,
+            analysisType: file.type.startsWith('audio') ? 'voice' : file.type.startsWith('video') ? 'video' : 'image',
+          };
+
+      const res = await fetch('/api/detect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileName: url.split('/').pop() || 'media-file',
-          fileType: mode === 'voice' ? 'audio' : 'video',
-          fileSize: null,
-          analysisType: mode,
-        }),
-      })
+        body: JSON.stringify(body),
+      });
 
-      const data = await response.json()
-      clearInterval(iv)
-      setProgress(100)
-
-      if (!data.success) throw new Error(data.error || 'Analysis failed')
-
-      const { verdict, confidence, detectionScore, signals, recommendation } = data.result
-      const isFake = verdict === 'DEEPFAKE' || verdict === 'SUSPICIOUS'
-
-      setTimeout(() => {
-        setResult({ isFake, score: detectionScore.toFixed(1), conf: confidence.toFixed(1), signals, recommendation, verdict })
-        setPhase('done')
-        showToast(isFake ? '⚠ AI-generated content detected' : '✓ Content appears authentic', isFake ? 'error' : 'success')
-      }, 400)
-
-    } catch (err) {
-      clearInterval(iv)
-      setPhase('initial')
-      setProgress(0)
-      showToast('Analysis failed: ' + err.message, 'error')
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      setResult(data.result);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="page-enter" style={{ padding: '2rem' }}>
-      <h1 style={{ fontSize: '1.3rem', fontWeight: 700, letterSpacing: 2, marginBottom: '.25rem' }}>
-        DETECTION LAB
+    <div style={{ padding: '40px 24px', maxWidth: 760, margin: '0 auto', fontFamily: 'Courier New, monospace' }}>
+      <div style={{ fontSize: 11, color: '#00d4ff', letterSpacing: '0.15em', marginBottom: 16 }}>DETECTION LAB</div>
+      <h1 style={{ fontSize: 32, color: '#fff', fontWeight: 700, marginBottom: 8 }}>
+        DETECT. <span style={{ color: '#00d4ff' }}>ANALYZE.</span>
       </h1>
-      <p style={{ color: 'var(--text3)', fontSize: 11, letterSpacing: 2, marginBottom: '1.5rem' }}>
-        ENTER MEDIA URL FOR NEURAL ANALYSIS
+      <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, marginBottom: 32 }}>
+        Upload a file or paste a URL. Our AI engine analyzes it for deepfake signatures in real time.
       </p>
 
-      {/* Mode selector */}
-      <div
-        role="group"
-        aria-label="Detection mode"
-        style={{ display: 'flex', gap: 10, marginBottom: '1.5rem' }}
-      >
+      {/* Mode toggle */}
+      <div style={{ display: 'flex', gap: 0, marginBottom: 24, border: '1px solid rgba(0,212,255,0.2)', borderRadius: 4, overflow: 'hidden', width: 'fit-content' }}>
         {[
-          { id: 'voice', label: '🎙 VOICE' },
-          { id: 'face', label: '🎭 FACE/VIDEO' },
-        ].map(m => (
+          { id: 'file', label: '📂 UPLOAD FILE' },
+          { id: 'url', label: '🔗 PASTE URL' },
+        ].map((m) => (
           <button
             key={m.id}
-            onClick={() => setMode(m.id)}
-            className="tag"
-            aria-pressed={mode === m.id}
+            onClick={() => switchMode(m.id)}
             style={{
-              padding: '7px 14px', fontSize: 11,
-              color: mode === m.id ? 'var(--cyan)' : 'var(--text3)',
-              borderColor: mode === m.id ? 'var(--cyan3)' : 'var(--border)',
+              padding: '10px 24px',
+              fontSize: 11,
+              fontFamily: 'Courier New, monospace',
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              border: 'none',
+              cursor: 'pointer',
+              background: inputMode === m.id ? '#00d4ff' : 'transparent',
+              color: inputMode === m.id ? '#020b18' : 'rgba(0,212,255,0.5)',
+              transition: 'all 0.2s',
             }}
           >
             {m.label}
@@ -118,172 +127,189 @@ export default function Detect() {
         ))}
       </div>
 
-      <div className="detect-layout">
-        {/* Left: Input + Options */}
-        <div>
-          {/* URL Input */}
-          <div
-            className="upload-zone"
-            style={{ cursor: 'default', display: 'flex', flexDirection: 'column', gap: '.75rem', padding: '1.25rem', alignItems: 'stretch' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-              <span aria-hidden="true" style={{ fontSize: '1.4rem' }}>{urlValid ? '✅' : '🔗'}</span>
-              <label
-                htmlFor="media-url"
-                style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, color: 'var(--text2)' }}
-              >
-                PASTE MEDIA URL
-              </label>
-            </div>
-            <input
-              id="media-url"
-              type="url"
-              value={url}
-              onChange={handleUrlChange}
-              placeholder="https://example.com/video.mp4"
-              aria-describedby={urlError ? 'url-error' : 'url-hint'}
-              aria-invalid={urlError ? 'true' : 'false'}
-              style={{
-                width: '100%',
-                background: 'var(--bg2)',
-                border: `1px solid ${urlError ? 'var(--red)' : urlValid ? 'var(--cyan3)' : 'var(--border)'}`,
-                color: 'var(--text)',
-                padding: '10px 12px',
-                fontSize: 12,
-                letterSpacing: 1,
-                outline: 'none',
-                fontFamily: 'var(--font)',
-                boxSizing: 'border-box',
-                transition: 'border-color .2s',
-              }}
-              onKeyDown={e => e.key === 'Enter' && urlValid && phase !== 'scanning' && runAnalysis()}
-            />
-            {urlError
-              ? <span id="url-error" className="field-error" role="alert">{urlError}</span>
-              : <span id="url-hint" className="field-hint">
-                  {mode === 'voice' ? 'Supports MP3, WAV, OGG, M4A, direct stream URLs' : 'Supports MP4, MOV, WEBM, YouTube, direct stream URLs'}
-                </span>
-            }
-          </div>
-
-          {/* Options */}
-          <div className="panel" style={{ marginTop: '1rem' }}>
-            <div className="panel-title" id="options-label">ANALYSIS OPTIONS</div>
-            <fieldset
-              aria-labelledby="options-label"
-              style={{ border: 'none', padding: 0 }}
-            >
-              <legend className="sr-only">Select analysis options</legend>
-              {[
-                { key: 'spectral', label: 'Deep spectral scan' },
-                { key: 'biometric', label: 'Biometric fingerprinting' },
-                { key: 'vault', label: 'Identity vault cross-reference' },
-                { key: 'report', label: 'Generate takedown report' },
-              ].map(opt => (
-                <label
-                  key={opt.key}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text2)', cursor: 'pointer', marginBottom: 8 }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={options[opt.key]}
-                    onChange={e => setOptions(p => ({ ...p, [opt.key]: e.target.checked }))}
-                    style={{ accentColor: 'var(--cyan)', cursor: 'pointer' }}
-                  />
-                  {opt.label}
-                </label>
-              ))}
-            </fieldset>
-          </div>
-
-          <button
-            className="analyze-btn"
-            disabled={!urlValid || phase === 'scanning'}
-            onClick={runAnalysis}
-            aria-busy={phase === 'scanning'}
-            aria-label={phase === 'scanning' ? 'Analysis in progress' : 'Run media analysis'}
-          >
-            {phase === 'scanning' ? 'ANALYZING...' : 'ANALYZE MEDIA'}
-          </button>
+      {/* File upload mode */}
+      {inputMode === 'file' && (
+        <div
+          onDrop={handleDrop}
+          onDragOver={(e) => e.preventDefault()}
+          onClick={() => inputRef.current.click()}
+          style={{
+            border: `1px solid ${file ? '#00d4ff' : 'rgba(0,212,255,0.2)'}`,
+            borderRadius: 4,
+            padding: '48px 24px',
+            textAlign: 'center',
+            cursor: 'pointer',
+            background: file ? 'rgba(0,212,255,0.05)' : 'rgba(0,0,0,0.3)',
+            transition: 'all 0.2s',
+            marginBottom: 24,
+          }}
+        >
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*,audio/*,video/*"
+            style={{ display: 'none' }}
+            onChange={(e) => e.target.files[0] && handleFile(e.target.files[0])}
+          />
+          {file ? (
+            <>
+              <div style={{ fontSize: 28, marginBottom: 8 }}>
+                {file.type.startsWith('audio') ? '🎵' : file.type.startsWith('video') ? '🎬' : '🖼️'}
+              </div>
+              <div style={{ color: '#00d4ff', fontSize: 14, fontWeight: 700 }}>{file.name}</div>
+              <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 4 }}>
+                {(file.size / 1024).toFixed(1)} KB · {file.type || 'unknown type'}
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>📂</div>
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>DROP FILE HERE OR CLICK TO BROWSE</div>
+              <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, marginTop: 8 }}>
+                Supported: JPG, PNG, MP3, WAV, MP4, MOV
+              </div>
+            </>
+          )}
         </div>
+      )}
 
-        {/* Right: Results */}
-        <div className="result-panel" role="region" aria-label="Analysis results" aria-live="polite">
-          {phase === 'initial' && (
-            <div style={{ textAlign: 'center', padding: '3rem 0' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '.75rem' }} aria-hidden="true">🔬</div>
-              <p style={{ color: 'var(--text3)', fontSize: 12, letterSpacing: 2 }}>AWAITING MEDIA INPUT</p>
-            </div>
-          )}
+      {/* URL mode */}
+      {inputMode === 'url' && (
+        <div style={{ marginBottom: 24 }}>
+          <input
+            type="url"
+            value={url}
+            onChange={handleUrlChange}
+            onKeyDown={(e) => e.key === 'Enter' && canRun && !loading && runDetection()}
+            placeholder="https://example.com/video.mp4"
+            style={{
+              width: '100%',
+              background: 'rgba(0,0,0,0.3)',
+              border: `1px solid ${url && !urlValid ? '#ff3b5c' : urlValid ? '#00d4ff' : 'rgba(0,212,255,0.2)'}`,
+              color: '#fff',
+              padding: '14px 16px',
+              fontSize: 13,
+              fontFamily: 'Courier New, monospace',
+              outline: 'none',
+              borderRadius: 4,
+              boxSizing: 'border-box',
+              transition: 'border-color 0.2s',
+            }}
+          />
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 8 }}>
+            {url && !urlValid
+              ? <span style={{ color: '#ff3b5c' }}>⚠ Please enter a valid URL starting with https://</span>
+              : 'Supports direct media links: MP4, MP3, WAV, JPG, PNG, and more'}
+          </div>
+        </div>
+      )}
 
-          {phase === 'scanning' && (
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
-              <div style={{ fontSize: '1.8rem', marginBottom: '.75rem' }} aria-hidden="true">⚡</div>
-              <p style={{ color: 'var(--cyan)', fontSize: 12, letterSpacing: 2, marginBottom: '1.25rem' }}>
-                ANALYZING...
-              </p>
-              <ScanProgress progress={progress} status={status} />
-            </div>
-          )}
+      {/* Run button */}
+      <button
+        onClick={runDetection}
+        disabled={!canRun || loading}
+        style={{
+          background: canRun && !loading ? '#00d4ff' : 'rgba(0,212,255,0.15)',
+          color: canRun && !loading ? '#020b18' : 'rgba(0,212,255,0.4)',
+          border: 'none',
+          padding: '14px 40px',
+          fontFamily: 'Courier New, monospace',
+          fontSize: 13,
+          fontWeight: 700,
+          letterSpacing: '0.12em',
+          cursor: canRun && !loading ? 'pointer' : 'not-allowed',
+          width: '100%',
+          transition: 'all 0.2s',
+          borderRadius: 4,
+        }}
+      >
+        {loading ? '// ANALYZING...' : '// RUN DETECTION'}
+      </button>
 
-          {phase === 'done' && result && (
+      {/* Error */}
+      {error && (
+        <div style={{ marginTop: 24, padding: 16, border: '1px solid rgba(255,59,92,0.3)', color: '#ff3b5c', fontSize: 12, borderRadius: 4 }}>
+          ERROR: {error}
+        </div>
+      )}
+
+      {/* Result */}
+      {result && (
+        <div style={{ marginTop: 32, border: '1px solid rgba(0,212,255,0.15)', background: 'rgba(0,0,0,0.4)', borderRadius: 4 }}>
+          {/* Verdict banner */}
+          <div style={{
+            padding: '24px 28px',
+            borderBottom: '1px solid rgba(0,212,255,0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 24,
+          }}>
             <div>
-              <h2 className="panel-title">ANALYSIS RESULT</h2>
-              <div
-                className={`result-score ${result.isFake ? 'score-fake' : 'score-real'}`}
-                aria-label={result.isFake ? `AI clone detected with ${result.score}% confidence` : 'Content authenticated'}
-              >
-                {result.isFake ? `${result.score}%` : 'AUTH'}
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em', marginBottom: 4 }}>VERDICT</div>
+              <div style={{ fontSize: 28, fontWeight: 700, color: VERDICT_COLOR[result.verdict] || '#fff' }}>
+                {result.verdict}
               </div>
-              <div style={{ textAlign: 'center', marginBottom: '.75rem' }}>
-                <p style={{ fontSize: 12, letterSpacing: 3, color: result.isFake ? 'var(--red)' : 'var(--green)' }}>
-                  {result.isFake ? '⚠ AI-GENERATED CLONE DETECTED' : '✓ AUTHENTIC — NO CLONE DETECTED'}
-                </p>
-                <div
-                  className="confidence-bar"
-                  role="meter"
-                  aria-valuenow={result.conf}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-label={`Confidence: ${result.conf}%`}
-                >
-                  <div className="confidence-fill" style={{ width: `${result.conf}%`, background: result.isFake ? 'var(--red)' : 'var(--green)' }} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em', marginBottom: 8 }}>
+                DETECTION SCORE
+              </div>
+              <div style={{ height: 8, background: 'rgba(255,255,255,0.08)', borderRadius: 4, overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%',
+                  width: `${result.detectionScore}%`,
+                  background: VERDICT_COLOR[result.verdict] || '#00d4ff',
+                  transition: 'width 0.8s ease',
+                }} />
+              </div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 6 }}>
+                {result.detectionScore}/100 · {result.confidence}% confidence
+              </div>
+            </div>
+          </div>
+
+          {/* Signals */}
+          {result.signals?.length > 0 && (
+            <div style={{ padding: '20px 28px', borderBottom: '1px solid rgba(0,212,255,0.1)' }}>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em', marginBottom: 16 }}>
+                DETECTION SIGNALS
+              </div>
+              {result.signals.map((s, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
+                  <div style={{
+                    padding: '2px 8px',
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: '0.08em',
+                    color: s.severity === 'HIGH' ? '#ff3b5c' : s.severity === 'MEDIUM' ? '#ffb300' : '#00e887',
+                    border: `1px solid ${s.severity === 'HIGH' ? 'rgba(255,59,92,0.3)' : s.severity === 'MEDIUM' ? 'rgba(255,179,0,0.3)' : 'rgba(0,232,135,0.3)'}`,
+                    whiteSpace: 'nowrap',
+                    marginTop: 2,
+                  }}>
+                    {s.severity}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 12, color: '#fff', fontWeight: 700 }}>{s.name}</div>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{s.detail}</div>
+                  </div>
                 </div>
-                <p style={{ fontSize: 11, color: 'var(--text3)' }}>Confidence: {result.conf}%</p>
-              </div>
+              ))}
+            </div>
+          )}
 
-              <dl>
-                {(result.signals || []).map(({ name, detail, severity }) => {
-                  const good = severity === 'LOW'
-                  return (
-                    <div key={name} className="breakdown-row">
-                      <dt className="breakdown-label">{name}</dt>
-                      <dd className="breakdown-val" style={{ color: severity === 'HIGH' ? 'var(--red)' : severity === 'MEDIUM' ? 'var(--yellow, orange)' : 'var(--green)' }}>
-                        {detail}
-                      </dd>
-                    </div>
-                  )
-                })}
-              </dl>
+          {/* Footer */}
+          <div style={{ padding: '16px 28px', display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>
+            <span>MODEL: {result.modelUsed}</span>
+            <span>{result.processingTime}ms</span>
+          </div>
 
-              <div style={{ marginTop: '1.25rem', padding: '.75rem', background: 'rgba(0,229,255,.04)', border: '1px solid var(--border)' }}>
-                <p style={{ fontSize: 10, color: 'var(--text3)', letterSpacing: 2, marginBottom: 5 }}>AI SUMMARY</p>
-                <p style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.6 }}>
-                  {result.recommendation}
-                </p>
-              </div>
-
-              <button
-                className="analyze-btn"
-                style={{ marginTop: '1.25rem' }}
-                onClick={() => { setPhase('initial'); setResult(null); setUrl(''); setProgress(0) }}
-              >
-                RUN NEW ANALYSIS
-              </button>
+          {result.recommendation && (
+            <div style={{ padding: '12px 28px', borderTop: '1px solid rgba(0,212,255,0.1)', fontSize: 12, color: '#00d4ff' }}>
+              ▶ {result.recommendation}
             </div>
           )}
         </div>
-      </div>
+      )}
     </div>
-  )
+  );
 }
