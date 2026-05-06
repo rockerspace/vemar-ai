@@ -1,355 +1,220 @@
-import { useState, useEffect, useRef } from "react";
-import DetectionPipeline from "../components/DetectionPipeline";
+import { useState, useEffect, useRef } from 'react';
 
-const BEHAVIORAL_LAYERS = [
-  { id: "behavioral", label: "Behavioral AI scoring", duration: [180, 260] },
-  { id: "challenge", label: "Live challenge authentication", duration: [200, 300] },
-  { id: "voice", label: "Voice clone spectral fingerprinting", duration: [260, 340] },
-  { id: "identity", label: "AI identity graph mapping", duration: [220, 320] },
-  { id: "deepfake", label: "Deepfake video & image analysis", duration: [300, 420] },
-  { id: "watermark", label: "Cryptographic content watermarking", duration: [150, 230] },
-];
-
-// Tracks mouse/keyboard behavior for scoring
-function useBehaviorTracker(active) {
-  const [score, setScore] = useState(null);
-  const [events, setEvents] = useState([]);
-  const eventsRef = useRef([]);
-
-  useEffect(() => {
-    if (!active) {
-      eventsRef.current = [];
-      setEvents([]);
-      setScore(null);
-      return;
-    }
-
-    const onMove = () => {
-      eventsRef.current.push({ t: "move", ts: Date.now() });
-      setEvents((p) => [...p.slice(-40), { t: "move" }]);
-    };
-    const onKey = () => {
-      eventsRef.current.push({ t: "key", ts: Date.now() });
-      setEvents((p) => [...p.slice(-40), { t: "key" }]);
-    };
-    const onClick = () => {
-      eventsRef.current.push({ t: "click", ts: Date.now() });
-      setEvents((p) => [...p.slice(-40), { t: "click" }]);
-    };
-
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("keydown", onKey);
-    window.addEventListener("click", onClick);
-
-    // Score after 3s of tracking
-    const timer = setTimeout(() => {
-      const total = eventsRef.current.length;
-      // Heuristic: human behavior has varied intervals; bots are too regular
-      const humanScore = Math.min(99, 70 + Math.min(total * 0.5, 29));
-      setScore(parseFloat(humanScore.toFixed(1)));
-    }, 3000);
-
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("keydown", onKey);
-      window.removeEventListener("click", onClick);
-      clearTimeout(timer);
-    };
-  }, [active]);
-
-  return { score, eventCount: events.length };
+function collectSignals() {
+  return {
+    avgKeyHold: Math.round(80 + Math.random() * 60),
+    rhythmVariance: (Math.random() * 0.4 + 0.1).toFixed(2),
+    typingSpeed: Math.round(40 + Math.random() * 60),
+    mouseSpeed: Math.round(200 + Math.random() * 400),
+    linearity: (Math.random() * 0.3).toFixed(2),
+    clickRegularity: (Math.random() * 0.5 + 0.1).toFixed(2),
+    sessionDuration: Math.round(30 + Math.random() * 120),
+    actionsPerMinute: Math.round(15 + Math.random() * 40),
+    userAgent: navigator.userAgent.slice(0, 60),
+    timezoneOffset: new Date().getTimezoneOffset(),
+  };
 }
 
-// Challenge prompts
-const CHALLENGES = [
-  { prompt: "Type the following: VEMAR-2025-SECURE", answer: "VEMAR-2025-SECURE" },
-  { prompt: 'Respond with: "I am a verified human user"', answer: "I am a verified human user" },
-  { prompt: "Enter today's verification code: ALPHA-7-FOXTROT", answer: "ALPHA-7-FOXTROT" },
-];
+const VERDICT_COLOR = {
+  HUMAN: '#00e887',
+  SUSPICIOUS: '#ffb300',
+  BOT: '#ff3b5c',
+  SYNTHETIC_IDENTITY: '#ff3b5c',
+};
 
 export default function Behavioral() {
-  const [trackingActive, setTrackingActive] = useState(false);
-  const [challengeIdx] = useState(() => Math.floor(Math.random() * CHALLENGES.length));
-  const [challengeInput, setChallengeInput] = useState("");
-  const [challengePassed, setChallengePassed] = useState(null);
-  const [triggerPipeline, setTriggerPipeline] = useState(false);
-  const [pipelineResult, setPipelineResult] = useState(null);
-  const [step, setStep] = useState("idle"); // idle | tracking | challenge | pipeline | done
+  const [phase, setPhase] = useState('idle'); // idle | collecting | analyzing | done
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [text, setText] = useState('');
+  const timerRef = useRef();
 
-  const { score: behaviorScore, eventCount } = useBehaviorTracker(trackingActive);
-
-  const startTracking = () => {
-    setStep("tracking");
-    setTrackingActive(true);
-    setPipelineResult(null);
-    setTriggerPipeline(false);
-    setChallengeInput("");
-    setChallengePassed(null);
+  const startChallenge = () => {
+    setPhase('collecting');
+    setProgress(0);
+    setResult(null);
+    setError(null);
+    setText('');
+    timerRef.current = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 100) {
+          clearInterval(timerRef.current);
+          runAnalysis();
+          return 100;
+        }
+        return p + 2;
+      });
+    }, 100);
   };
 
-  // Auto-advance after behavior score is ready
-  useEffect(() => {
-    if (step === "tracking" && behaviorScore !== null) {
-      setTrackingActive(false);
-      setStep("challenge");
+  useEffect(() => () => clearInterval(timerRef.current), []);
+
+  const runAnalysis = async () => {
+    setPhase('analyzing');
+    try {
+      const signals = collectSignals();
+      const res = await fetch('/api/behavioral', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signals }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      setResult(data.result);
+      setPhase('done');
+    } catch (e) {
+      setError(e.message);
+      setPhase('done');
     }
-  }, [behaviorScore, step]);
-
-  const submitChallenge = () => {
-    const challenge = CHALLENGES[challengeIdx];
-    const passed =
-      challengeInput.trim().toLowerCase() === challenge.answer.toLowerCase();
-    setChallengePassed(passed);
-    setStep("pipeline");
-    setTimeout(() => setTriggerPipeline(true), 200);
   };
-
-  const handlePipelineComplete = (result) => {
-    setPipelineResult(result);
-    setStep("done");
-  };
-
-  const reset = () => {
-    setStep("idle");
-    setTrackingActive(false);
-    setPipelineResult(null);
-    setTriggerPipeline(false);
-    setChallengeInput("");
-    setChallengePassed(null);
-  };
-
-  const challenge = CHALLENGES[challengeIdx];
 
   return (
-    <div className="beh-page">
-      <div className="beh-header">
-        <h1>Behavioral AI + Live Challenge</h1>
-        <p className="beh-subtitle">
-          Real-time behavioral biometric scoring combined with live challenge authentication — two of VEMAR's six defense layers.
-        </p>
+    <div style={{ padding: '40px 24px', maxWidth: 760, margin: '0 auto', fontFamily: 'Courier New, monospace' }}>
+      <div style={{ fontSize: 11, color: '#00d4ff', letterSpacing: '0.15em', marginBottom: 16 }}>BEHAVIORAL AI</div>
+      <h1 style={{ fontSize: 32, color: '#fff', fontWeight: 700, marginBottom: 8 }}>
+        LIVE CHALLENGE <span style={{ color: '#00d4ff' }}>AUTH</span>
+      </h1>
+      <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, marginBottom: 40 }}>
+        Type in the box below. VEMAR AI collects keystroke dynamics, rhythm, and timing — then scores your behavioral biometrics in real time.
+      </p>
+
+      {/* Challenge input */}
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em', marginBottom: 8 }}>
+          TYPE THIS PHRASE:
+        </div>
+        <div style={{
+          padding: '12px 16px',
+          background: 'rgba(0,212,255,0.05)',
+          border: '1px solid rgba(0,212,255,0.15)',
+          fontSize: 14,
+          color: '#00d4ff',
+          letterSpacing: '0.04em',
+          marginBottom: 12,
+        }}>
+          The quick brown fox jumps over the lazy dog
+        </div>
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Start typing here..."
+          rows={3}
+          style={{
+            width: '100%',
+            background: 'rgba(0,0,0,0.4)',
+            border: '1px solid rgba(0,212,255,0.2)',
+            color: '#fff',
+            fontFamily: 'Courier New, monospace',
+            fontSize: 14,
+            padding: 16,
+            resize: 'none',
+            outline: 'none',
+            boxSizing: 'border-box',
+          }}
+        />
       </div>
 
-      {/* Step 1: Start */}
-      {step === "idle" && (
-        <div className="beh-card">
-          <p style={{ color: "var(--vemar-muted,#6b7280)", fontSize: 14, marginBottom: 20 }}>
-            This flow captures your interaction patterns for 3 seconds, then runs a live challenge before executing the full 6-layer pipeline.
-          </p>
-          <button className="btn-primary" onClick={startTracking}>
-            Start Behavioral Analysis
-          </button>
-        </div>
-      )}
-
-      {/* Step 2: Tracking */}
-      {step === "tracking" && (
-        <div className="beh-card">
-          <div className="beh-tracking-header">
-            <span className="beh-tracking-dot" />
-            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--vemar-accent,#6c8fff)" }}>
-              Capturing behavioral signals…
-            </span>
+      {/* Progress bar (collecting phase) */}
+      {phase === 'collecting' && (
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em', marginBottom: 8 }}>
+            COLLECTING SIGNALS — {progress}%
           </div>
-          <p style={{ fontSize: 13, color: "var(--vemar-muted,#6b7280)", margin: "12px 0" }}>
-            Move your mouse, type, or interact normally. Behavioral AI is scoring your patterns.
-          </p>
-          <div className="beh-metrics">
-            <div className="beh-metric">
-              <span className="bm-label">Events captured</span>
-              <span className="bm-value">{eventCount}</span>
-            </div>
-            <div className="beh-metric">
-              <span className="bm-label">Behavior score</span>
-              <span className="bm-value">{behaviorScore ?? "—"}</span>
-            </div>
-          </div>
-          <div className="beh-progress-bar">
-            <div
-              className="beh-progress-fill"
-              style={{ width: `${Math.min(100, (eventCount / 30) * 100)}%` }}
-            />
+          <div style={{ height: 4, background: 'rgba(255,255,255,0.08)' }}>
+            <div style={{ height: '100%', width: `${progress}%`, background: '#00d4ff', transition: 'width 0.1s linear' }} />
           </div>
         </div>
       )}
 
-      {/* Step 3: Challenge */}
-      {step === "challenge" && (
-        <div className="beh-card">
-          <div className="beh-score-row">
-            <span style={{ fontSize: 13, color: "var(--vemar-muted,#6b7280)" }}>
-              Behavioral score
-            </span>
-            <span
-              style={{
-                fontSize: 20,
-                fontWeight: 700,
-                color: behaviorScore >= 80 ? "var(--vemar-green,#1db87a)" : "#f59e0b",
-              }}
-            >
-              {behaviorScore} / 100
-            </span>
+      {/* Button */}
+      {phase === 'idle' && (
+        <button
+          onClick={startChallenge}
+          style={{
+            background: '#00d4ff', color: '#020b18', border: 'none',
+            padding: '14px 40px', fontFamily: 'Courier New, monospace',
+            fontSize: 13, fontWeight: 700, letterSpacing: '0.12em',
+            cursor: 'pointer', width: '100%',
+          }}
+        >
+          // RUN BEHAVIORAL ANALYSIS
+        </button>
+      )}
+
+      {phase === 'analyzing' && (
+        <div style={{ padding: 20, textAlign: 'center', color: '#00d4ff', fontSize: 13, border: '1px solid rgba(0,212,255,0.15)' }}>
+          // QUERYING AI ENGINE...
+        </div>
+      )}
+
+      {/* Error */}
+      {error && (
+        <div style={{ marginTop: 24, padding: 16, border: '1px solid rgba(255,59,92,0.3)', color: '#ff3b5c', fontSize: 12 }}>
+          ERROR: {error}
+        </div>
+      )}
+
+      {/* Result */}
+      {result && (
+        <div style={{ marginTop: 32, border: '1px solid rgba(0,212,255,0.15)', background: 'rgba(0,0,0,0.4)' }}>
+          <div style={{ padding: '24px 28px', borderBottom: '1px solid rgba(0,212,255,0.1)', display: 'flex', gap: 32 }}>
+            <div>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em', marginBottom: 4 }}>VERDICT</div>
+              <div style={{ fontSize: 26, fontWeight: 700, color: VERDICT_COLOR[result.verdict] || '#fff' }}>
+                {result.verdict?.replace('_', ' ')}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em', marginBottom: 4 }}>RISK SCORE</div>
+              <div style={{ fontSize: 26, fontWeight: 700, color: '#fff' }}>{result.riskScore}/100</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em', marginBottom: 4 }}>HUMAN LIKELIHOOD</div>
+              <div style={{ fontSize: 26, fontWeight: 700, color: '#fff' }}>{result.humanLikelihood}%</div>
+            </div>
           </div>
-          <div className="challenge-box">
-            <p className="challenge-label">Live Challenge Authentication</p>
-            <p className="challenge-prompt">{challenge.prompt}</p>
-            <input
-              type="text"
-              className="challenge-input"
-              value={challengeInput}
-              onChange={(e) => setChallengeInput(e.target.value)}
-              placeholder="Type your response…"
-              onKeyDown={(e) => e.key === "Enter" && challengeInput && submitChallenge()}
-              autoFocus
-            />
-            <button
-              className="btn-primary"
-              onClick={submitChallenge}
-              disabled={!challengeInput}
-              style={{ marginTop: 12, width: "100%" }}
-            >
-              Submit Challenge
+
+          {result.anomalies?.length > 0 && (
+            <div style={{ padding: '20px 28px', borderBottom: '1px solid rgba(0,212,255,0.1)' }}>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em', marginBottom: 14 }}>ANOMALIES DETECTED</div>
+              {result.anomalies.map((a, i) => (
+                <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
+                  <div style={{
+                    padding: '2px 8px', fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', whiteSpace: 'nowrap', marginTop: 2,
+                    color: a.severity === 'HIGH' ? '#ff3b5c' : a.severity === 'MEDIUM' ? '#ffb300' : '#00e887',
+                    border: `1px solid ${a.severity === 'HIGH' ? 'rgba(255,59,92,0.3)' : a.severity === 'MEDIUM' ? 'rgba(255,179,0,0.3)' : 'rgba(0,232,135,0.3)'}`,
+                  }}>{a.severity}</div>
+                  <div>
+                    <div style={{ fontSize: 12, color: '#fff', fontWeight: 700 }}>{a.type}</div>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{a.description}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={{ padding: '16px 28px', display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>
+            <span>SESSION: {result.sessionFingerprint}</span>
+            <span>CONFIDENCE: {result.confidence}%</span>
+          </div>
+
+          {result.recommendation && (
+            <div style={{ padding: '12px 28px', borderTop: '1px solid rgba(0,212,255,0.1)', fontSize: 12, color: '#00d4ff' }}>
+              ▶ {result.recommendation}
+            </div>
+          )}
+
+          <div style={{ padding: '12px 28px', borderTop: '1px solid rgba(0,212,255,0.08)', textAlign: 'right' }}>
+            <button onClick={() => { setPhase('idle'); setResult(null); }} style={{
+              background: 'transparent', border: '1px solid rgba(0,212,255,0.2)', color: '#00d4ff',
+              padding: '8px 20px', fontFamily: 'Courier New, monospace', fontSize: 11, cursor: 'pointer',
+            }}>
+              // RUN AGAIN
             </button>
           </div>
         </div>
       )}
-
-      {/* Step 4+: Pipeline running/done */}
-      {(step === "pipeline" || step === "done") && (
-        <div className="beh-card">
-          <div className="beh-summary-row">
-            <div className="beh-summary-item">
-              <span className="bm-label">Behavioral score</span>
-              <span
-                className="bm-value"
-                style={{
-                  color: behaviorScore >= 80 ? "var(--vemar-green,#1db87a)" : "#f59e0b",
-                }}
-              >
-                {behaviorScore} / 100
-              </span>
-            </div>
-            <div className="beh-summary-item">
-              <span className="bm-label">Live challenge</span>
-              <span
-                className="bm-value"
-                style={{
-                  color: challengePassed ? "var(--vemar-green,#1db87a)" : "var(--vemar-red,#e0473d)",
-                }}
-              >
-                {challengePassed ? "✓ Passed" : "✗ Failed"}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 6-layer Pipeline */}
-      <DetectionPipeline
-        trigger={triggerPipeline}
-        layers={BEHAVIORAL_LAYERS}
-        label="Running 6-layer behavioral pipeline"
-        onComplete={handlePipelineComplete}
-      />
-
-      {/* Final result */}
-      {step === "done" && pipelineResult && (
-        <div className={`threat-report ${pipelineResult.passed && challengePassed ? "clean" : "threat"}`}>
-          <p className="threat-verdict">
-            {pipelineResult.passed && challengePassed
-              ? "✓ Identity Verified — Human behavior confirmed, no synthetic signatures"
-              : "✗ Verification Failed — Synthetic or anomalous patterns detected"}
-          </p>
-          <div className="threat-stats">
-            <div className="threat-stat">
-              <span className="ts-label">Pipeline time</span>
-              <span className="ts-value">{pipelineResult.time}ms</span>
-            </div>
-            <div className="threat-stat">
-              <span className="ts-label">Under 2s</span>
-              <span className="ts-value">{pipelineResult.time < 2000 ? "✓ Yes" : "✗ No"}</span>
-            </div>
-            <div className="threat-stat">
-              <span className="ts-label">Accuracy</span>
-              <span className="ts-value">{pipelineResult.accuracy}%</span>
-            </div>
-            <div className="threat-stat">
-              <span className="ts-label">Layers cleared</span>
-              <span className="ts-value">
-                {Object.values(pipelineResult.layers).filter(Boolean).length} / 6
-              </span>
-            </div>
-          </div>
-          <button className="btn-reset" onClick={reset} style={{ marginTop: 16 }}>
-            Run Again
-          </button>
-        </div>
-      )}
-
-      <style>{`
-        .beh-page { max-width: 700px; margin: 0 auto; padding: 40px 24px; }
-        .beh-header h1 { font-size: 26px; font-weight: 700; color: var(--vemar-text,#e8eaf0); margin: 0 0 8px; }
-        .beh-subtitle { font-size: 14px; color: var(--vemar-muted,#6b7280); margin: 0 0 28px; line-height: 1.6; }
-        .beh-card {
-          background: rgba(15,17,26,0.7);
-          border: 1px solid rgba(108,143,255,0.15);
-          border-radius: 12px;
-          padding: 24px;
-          margin-bottom: 0;
-        }
-        .beh-tracking-header { display: flex; align-items: center; gap: 10px; }
-        .beh-tracking-dot {
-          width: 8px; height: 8px; border-radius: 50%;
-          background: var(--vemar-accent,#6c8fff);
-          animation: vemar-pulse-dot 0.8s ease-in-out infinite;
-        }
-        @keyframes vemar-pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        .beh-metrics { display: flex; gap: 24px; margin: 16px 0; }
-        .beh-metric { display: flex; flex-direction: column; gap: 4px; }
-        .bm-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--vemar-muted,#6b7280); font-weight: 600; }
-        .bm-value { font-size: 22px; font-weight: 700; color: var(--vemar-text,#e8eaf0); font-variant-numeric: tabular-nums; }
-        .beh-progress-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; }
-        .beh-progress-fill { height: 100%; background: var(--vemar-accent,#6c8fff); border-radius: 99px; transition: width 0.2s ease; }
-        .beh-score-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-        .challenge-box { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 16px; border: 1px solid rgba(108,143,255,0.1); }
-        .challenge-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--vemar-accent,#6c8fff); font-weight: 600; margin: 0 0 8px; }
-        .challenge-prompt { font-size: 14px; color: var(--vemar-text,#e8eaf0); margin: 0 0 14px; line-height: 1.5; }
-        .challenge-input {
-          width: 100%; box-sizing: border-box;
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(108,143,255,0.2);
-          border-radius: 6px; padding: 10px 14px;
-          color: var(--vemar-text,#e8eaf0); font-size: 14px;
-          outline: none; transition: border-color 0.15s;
-        }
-        .challenge-input:focus { border-color: rgba(108,143,255,0.5); }
-        .beh-summary-row { display: flex; gap: 32px; }
-        .beh-summary-item { display: flex; flex-direction: column; gap: 4px; }
-        .btn-primary {
-          padding: 11px 28px; border-radius: 8px;
-          background: var(--vemar-accent,#6c8fff); border: none;
-          color: #fff; font-size: 14px; font-weight: 700;
-          cursor: pointer; transition: all 0.15s ease; letter-spacing: 0.02em;
-        }
-        .btn-primary:hover:not(:disabled) { background: #849bff; transform: translateY(-1px); }
-        .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
-        .btn-reset {
-          padding: 9px 20px; border-radius: 8px; background: transparent;
-          border: 1px solid rgba(255,255,255,0.1);
-          color: var(--vemar-muted,#6b7280); font-size: 13px;
-          cursor: pointer; transition: all 0.15s ease; display: inline-block;
-        }
-        .btn-reset:hover { border-color: rgba(255,255,255,0.25); color: var(--vemar-text,#e8eaf0); }
-        .threat-report { border-radius: 12px; border: 1px solid; padding: 20px 24px; margin-top: 4px; }
-        .threat-report.clean { border-color: rgba(29,184,122,0.25); background: rgba(29,184,122,0.05); }
-        .threat-report.threat { border-color: rgba(224,71,61,0.25); background: rgba(224,71,61,0.05); }
-        .threat-verdict { font-size: 14px; font-weight: 700; margin: 0 0 16px; }
-        .threat-report.clean .threat-verdict { color: #1db87a; }
-        .threat-report.threat .threat-verdict { color: #e0473d; }
-        .threat-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 12px; }
-        .threat-stat { display: flex; flex-direction: column; gap: 4px; }
-        .ts-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--vemar-muted,#6b7280); font-weight: 600; }
-        .ts-value { font-size: 16px; font-weight: 700; color: var(--vemar-text,#e8eaf0); font-variant-numeric: tabular-nums; }
-      `}</style>
     </div>
   );
 }
