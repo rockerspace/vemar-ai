@@ -10,7 +10,6 @@ export default async function handler(req) {
     const { fileType, fileName, fileSize, analysisType = 'media' } = body;
 
     const systemPrompt = `You are VEMAR AI's deepfake detection engine. You analyze media files for signs of AI generation, voice cloning, and synthetic manipulation.
-
 Always respond with ONLY valid JSON in this exact structure:
 {
   "verdict": "AUTHENTIC" | "DEEPFAKE" | "SUSPICIOUS",
@@ -26,7 +25,7 @@ Always respond with ONLY valid JSON in this exact structure:
 
     const userPrompt = `Analyze this media file for deepfake/synthetic content:
 - File name: ${fileName || 'unknown'}
-- File type: ${fileType || 'unknown'}  
+- File type: ${fileType || 'unknown'}
 - File size: ${fileSize ? Math.round(fileSize / 1024) + ' KB' : 'unknown'}
 - Analysis type requested: ${analysisType}
 
@@ -58,9 +57,9 @@ Return a realistic detection result with specific technical signals.`;
     const data = await response.json();
     const text = data.content[0].text;
 
-    // Parse JSON from Claude response
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('No JSON in response');
+
     const result = JSON.parse(jsonMatch[0]);
 
     return new Response(JSON.stringify({ success: true, result }), {
