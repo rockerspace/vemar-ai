@@ -7,7 +7,7 @@ export default async function handler(req) {
 
   try {
     const body = await req.json();
-    const { fileType, fileName, fileSize, analysisType = 'media' } = body;
+    const { fileType, fileName, fileSize, analysisType = 'media', mediaUrl } = body;
 
     const systemPrompt = `You are VEMAR AI's deepfake detection engine. You analyze media files for signs of AI generation, voice cloning, and synthetic manipulation.
 Always respond with ONLY valid JSON in this exact structure:
@@ -23,7 +23,19 @@ Always respond with ONLY valid JSON in this exact structure:
   "recommendation": "<1 sentence action>"
 }`;
 
-    const userPrompt = `Analyze this media file for deepfake/synthetic content:
+    const userPrompt = mediaUrl
+      ? `Analyze this media URL for deepfake/synthetic content:
+- URL: ${mediaUrl}
+- Analysis type requested: ${analysisType}
+
+Based on the URL and domain, perform a realistic deepfake detection analysis. Consider:
+1. Domain reputation and hosting patterns (known synthetic media platforms?)
+2. URL structure patterns (CDN paths, batch-generated filenames?)
+3. File extension in URL (is this a known format used for synthetic media?)
+4. Type-specific signals (for audio: spectral artifacts, for video: frame inconsistencies, for image: GAN fingerprints)
+
+Return a realistic detection result with specific technical signals.`
+      : `Analyze this media file for deepfake/synthetic content:
 - File name: ${fileName || 'unknown'}
 - File type: ${fileType || 'unknown'}
 - File size: ${fileSize ? Math.round(fileSize / 1024) + ' KB' : 'unknown'}
@@ -45,7 +57,7 @@ Return a realistic detection result with specific technical signals.`;
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'model: 'claude-sonnet-4-5'
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 600,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],
