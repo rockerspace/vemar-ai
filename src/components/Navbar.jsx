@@ -1,30 +1,19 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, Link } from 'react-router-dom'
 import Logo from './Logo'
 import './Navbar.css'
 
-
 const links = [
-  { to: '/', label: 'HOME' },
-  { to: '/dashboard', label: 'DASHBOARD' },
-  { to: '/detect', label: 'DETECT' },
-  { to: '/behavioral', label: 'BEHAVIORAL' },
-  { to: '/identity', label: 'IDENTITY' },
-  { to: '/chat', label: 'AI ANALYST' },
-  { to: '/market', label: 'MARKET' },
-  { to: '/pricing', label: 'PRICING' },
+  // ← keep your existing links array exactly as-is
 ]
+
 export default function Navbar() {
-  const location = useLocation();
+  const location = useLocation()
+  const navigate = useNavigate()
 
-  // Don't render Navbar on the auth page
-  if (location.pathname === '/auth') return null;
-export default function Navbar() {
-  const location = useLocation();     // already there
-  const navigate = useNavigate();     // already there
+  if (location.pathname === '/auth') return null
 
-  // ADD THIS — must be inside the function, after the hooks
-  if (location.pathname === '/auth') return null;
-
-  // ... rest of your existing JSX ...
-}
+  // ← paste your existing Navbar JSX return here, unchanged
+  return (
+    // ... your existing return ...
+  )
 }
