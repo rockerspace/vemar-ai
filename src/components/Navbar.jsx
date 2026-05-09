@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Logo from './Logo'
 import './Navbar.css'
+import { useLocation } from 'react-router-dom';
 
 const links = [
   { to: '/', label: 'HOME' },
@@ -12,7 +13,11 @@ const links = [
   { to: '/market', label: 'MARKET' },
   { to: '/pricing', label: 'PRICING' },
 ]
+export default function Navbar() {
+  const location = useLocation();
 
+  // Don't render Navbar on the auth page
+  if (location.pathname === '/auth') return null;
 export default function Navbar() {
   const location = useLocation()
   const navigate = useNavigate()
