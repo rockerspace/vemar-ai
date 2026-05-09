@@ -47,13 +47,37 @@ export default function Dashboard() {
     showToast('Dashboard refreshed', 'success')
   }
 
-  const metrics = [
-    { val: threatCount, label: 'Active Threats',    color: 'var(--red)',    delta: '▲ 12% this week', up: true  },
-    { val: scanCount,   label: 'Scans Today',       color: 'var(--cyan)',   delta: '▼ 3%',            up: false },
-    { val: 2109,        label: 'Blocked / Month',   color: 'var(--green)',  delta: '▼ 8%',            up: false },
-    { val: '99.4',      label: 'Accuracy',          color: 'var(--amber)',  delta: '─ stable',         up: null, suffix: '%' },
-    { val: 312,         label: 'Behavioral Alerts', color: 'var(--purple)', delta: '▲ 5%',            up: true  },
-  ]
+ // ─── Stable "live" metrics ───────────────────────────────────────────
+// Numbers feel realistic and never flicker between renders.
+// To simulate a live feed, update via useEffect + setInterval below.
+
+const BASE_METRICS = {
+  scansToday:        3_847,
+  threatsBlocked:    142,
+  falsePositiveRate: '0.8%',
+  avgConfidence:     '97.3%',
+  voiceClones:       89,
+  deepfakeVideos:    31,
+  syntheticIds:      22,
+  behavioralFlags:   47,
+  // Recent 7-day trend (for a mini sparkline if you add one later)
+  weeklyScans:       [2_100, 2_580, 3_020, 2_890, 3_410, 3_650, 3_847],
+};
+
+// Optional: tick counts upward slowly so the page feels "live"
+// Drop this into your component:
+//
+// const [metrics, setMetrics] = useState(BASE_METRICS);
+// useEffect(() => {
+//   const id = setInterval(() => {
+//     setMetrics(m => ({
+//       ...m,
+//       scansToday:     m.scansToday + Math.floor(Math.random() * 3),
+//       threatsBlocked: m.threatsBlocked + (Math.random() > 0.7 ? 1 : 0),
+//     }));
+//   }, 4_000);
+//   return () => clearInterval(id);
+// }, []);
 
   return (
     <div className="page-enter" style={{ padding: '2rem' }}>
