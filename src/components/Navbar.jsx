@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Logo from './Logo'
 import './Navbar.css'
-import { useLocation } from 'react-router-dom';
+
 
 const links = [
   { to: '/', label: 'HOME' },
@@ -19,22 +19,12 @@ export default function Navbar() {
   // Don't render Navbar on the auth page
   if (location.pathname === '/auth') return null;
 export default function Navbar() {
-  const location = useLocation()
-  const navigate = useNavigate()
-  return (
-    <nav className="navbar">
-      <div className="nav-logo" onClick={() => navigate('/')}>
-        <Logo size={38} />
-        <span className="nav-logo-text">VEMAR<span className="nav-logo-dot">.AI</span></span>
-      </div>
-      <div className="nav-links">
-        {links.map(l => (
-          <Link key={l.to} to={l.to} className={`nav-link ${location.pathname === l.to ? 'active' : ''}`}>
-            {l.label}
-          </Link>
-        ))}
-        <Link to="/auth" className="nav-cta">LOGIN</Link>
-      </div>
-    </nav>
-  )
+  const location = useLocation();     // already there
+  const navigate = useNavigate();     // already there
+
+  // ADD THIS — must be inside the function, after the hooks
+  if (location.pathname === '/auth') return null;
+
+  // ... rest of your existing JSX ...
+}
 }
