@@ -9,8 +9,8 @@ import Market from './pages/Market'
 import Pricing from './pages/Pricing'
 import Auth from './pages/Auth'
 import Navbar from './components/Navbar'
-import { Navigate } from 'react-router-dom';
-import { getUser } from './pages/Auth';   // adjust path if you extracted auth.js
+
+
 
 function PrivateRoute({ children }) {
   return getUser() ? children : <Navigate to="/auth" replace />;
