@@ -1,4 +1,3 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Detect from './pages/Detect'
@@ -9,7 +8,8 @@ import Market from './pages/Market'
 import Pricing from './pages/Pricing'
 import Auth from './pages/Auth'
 import Navbar from './components/Navbar'
-
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { getUser } from './pages/Auth';
 
 
 function PrivateRoute({ children }) {
