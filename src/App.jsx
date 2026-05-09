@@ -1,3 +1,4 @@
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Detect from './pages/Detect'
@@ -7,33 +8,31 @@ import Chat from './Chat'
 import Market from './pages/Market'
 import Pricing from './pages/Pricing'
 import Auth from './pages/Auth'
+import NotFound from './pages/NotFound'
 import Navbar from './components/Navbar'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { getUser } from './pages/Auth';
-
-
+import { getUser } from './pages/Auth'
+ 
 function PrivateRoute({ children }) {
-  return getUser() ? children : <Navigate to="/auth" replace />;
+  return getUser() ? children : <Navigate to="/auth" replace />
 }
-
+ 
 export default function App() {
   return (
-    
-      <><Navbar /><Routes>
+    <>
+      <Navbar />
+      <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/detect" element={<Detect />} />
-        <Route path="/behavioral" element={<Behavioral />} />
-        <Route path="/identity" element={<Identity />} />
-        <Route path="/chat" element={<Chat />} />
+        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        <Route path="/detect" element={<PrivateRoute><Detect /></PrivateRoute>} />
+        <Route path="/behavioral" element={<PrivateRoute><Behavioral /></PrivateRoute>} />
+        <Route path="/identity" element={<PrivateRoute><Identity /></PrivateRoute>} />
+        <Route path="/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />
         <Route path="/market" element={<Market />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/auth" element={<Auth />} />
-        {/* catch-all: redirect unknown paths to home */}
-        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes></>
-    
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
   )
 }
+ 
