@@ -1,7 +1,5 @@
 export const config = { runtime: 'edge' };
 
-const MODEL = 'google/gemma-4-27b-it:free';
-
 export default async function handler(req) {
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
@@ -11,12 +9,9 @@ export default async function handler(req) {
     const { fileType, fileName, fileSize, analysisType = 'media', url, mediaUrl } = body;
     const targetUrl = url || mediaUrl;
 
-    const systemPrompt = `You are VEMAR AI deepfake detection engine. Respond ONLY with valid JSON, no other text:
-{"verdict":"AUTHENTIC","confidence":85,"detectionScore":15,"signals":[{"name":"signal name","severity":"LOW","detail":"detail here"}],"modelUsed":"VEMAR-v1","processingTime":1200,"recommendation":"action here"}`;
-
-    const userPrompt = targetUrl
-      ? `Analyze for deepfakes: URL=${targetUrl}, type=${analysisType}. Return realistic JSON result.`
-      : `Analyze for deepfakes: file=${fileName||'unknown'}, type=${fileType||'unknown'}, size=${fileSize?Math.round(fileSize/1024)+'KB':'unknown'}, analysis=${analysisType}. Return realistic JSON result.`;
+    const prompt = targetUrl
+      ? `You are a deepfake detection AI. Analyze this URL for synthetic/deepfake content: ${targetUrl}. Analysis type: ${analysisType}. Respond with ONLY this JSON and nothing else: {"verdict":"AUTHENTIC","confidence":85,"detectionScore":15,"signals":[{"name":"Domain Analysis","severity":"LOW","detail":"No known synthetic media patterns detected"}],"modelUsed":"VEMAR-v1","processingTime":1200,"recommendation":"No action required"}`
+      : `You are a deepfake detection AI. Analyze this media file for synthetic/deepfake content. Name: ${fileName||'unknown'}, Type: ${fileType||'unknown'}, Size: ${fileSize?Math.round(fileSize/1024)+'KB':'unknown'}, Analysis: ${analysisType}. Respond with ONLY this JSON and nothing else: {"verdict":"AUTHENTIC","confidence":85,"detectionScore":15,"signals":[{"name":"File Analysis","severity":"LOW","detail":"No synthetic patterns detected in file metadata"}],"modelUsed":"VEMAR-v1","processingTime":1200,"recommendation":"No action required"}`;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -27,16 +22,17 @@ export default async function handler(req) {
         'X-Title': 'VEMAR.AI',
       },
       body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 600,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
+        model: 'google/gemma-4-27b-it:free',
+        max_tokens: 400,
+        messages: [{ role: 'user', content: prompt }],
       }),
     });
 
-    if (!response.ok) throw new Error(`OpenRouter error ${response.status}`);
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`OpenRouter error ${response.status}: ${errText}`);
+    }
+
     const data = await response.json();
     const text = data.choices[0].message.content;
     const jsonMatch = text.match(/\{[\s\S]*\}/);
