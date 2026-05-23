@@ -8,7 +8,7 @@ import Chat from './Chat'
 import Market from './pages/Market'
 import Pricing from './pages/Pricing'
 import Auth from './pages/Auth'
-import NotFound from './pages/Notfound'
+import NotFound from './pages/NotFound';
 import Navbar from './components/Navbar'
 import { getUser } from './pages/Auth'
  
