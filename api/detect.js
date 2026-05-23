@@ -1,6 +1,6 @@
 export const config = { runtime: 'edge' };
 
-const MODEL = 'meta-llama/llama-3.3-8b-instruct:free';
+const MODEL = 'meta-llama/llama-3.1-8b-instruct:free';
 
 export default async function handler(req) {
   if (req.method !== 'POST') {
