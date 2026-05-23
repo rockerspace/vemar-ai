@@ -22,7 +22,7 @@ export default async function handler(req) {
         'X-Title': 'VEMAR.AI',
       },
       body: JSON.stringify({
-        model: 'google/gemma-4-27b-it:free',
+        model: 'google/gemma-4-31b-it:free',
         max_tokens: 400,
         messages: [{ role: 'user', content: prompt }],
       }),
