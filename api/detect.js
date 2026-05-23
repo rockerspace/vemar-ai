@@ -1,6 +1,6 @@
 export const config = { runtime: 'edge' };
 
-const MODEL = 'deepseek/deepseek-v4-flash:free';
+const MODEL = 'google/gemma-4-27b-it:free';
 
 export default async function handler(req) {
   if (req.method !== 'POST') {
