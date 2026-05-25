@@ -48,7 +48,7 @@ Build an identity graph analysis and determine if this is a real person, a synth
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'openai/gpt-oss-20b:free',
         max_tokens: 700,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],

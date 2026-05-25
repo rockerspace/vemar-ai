@@ -52,7 +52,7 @@ Analyze these patterns and determine if this is a real human, a bot, or a synthe
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'openai/gpt-oss-20b:free',
         max_tokens: 600,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],
