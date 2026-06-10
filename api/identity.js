@@ -4,73 +4,40 @@ export default async function handler(req) {
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
   }
-
   try {
     const body = await req.json();
     const { identityData } = body;
 
-    const systemPrompt = `You are VEMAR AI's identity graph analysis engine. You detect synthetic identities, stolen credentials, and AI-generated personas from identity signals.
+    const prompt = `You are an identity graph AI analyst. Analyze this identity profile for synthetic/stolen identity signals. Name: ${identityData?.name||'N/A'}, Email: ${identityData?.email||'N/A'}, Phone: ${identityData?.phone||'N/A'}, IP: ${identityData?.ip||'N/A'}, ProfileURL: ${identityData?.profileUrl||'N/A'}, AccountAge: ${identityData?.accountAge||'N/A'} days, ProfileCompleteness: ${identityData?.profileCompleteness||'N/A'}%, Country: ${identityData?.country||'N/A'}, LinkedAccounts: ${identityData?.linkedAccounts||0}, Flags: ${identityData?.previousFlags||0}. Respond with ONLY this JSON: {"verdict":"AUTHENTIC","threatScore":12,"confidence":88,"identityNodes":[{"node":"Email","status":"VERIFIED","detail":"Email domain consistent with profile age"}],"graphConsistency":88,"redFlags":[],"watermarkStatus":"CLEAN","recommendation":"Identity appears authentic"}`;
 
-Always respond with ONLY valid JSON in this exact structure:
-{
-  "verdict": "AUTHENTIC" | "SYNTHETIC" | "STOLEN" | "SUSPICIOUS",
-  "threatScore": <number 0-100>,
-  "confidence": <number 0-100>,
-  "identityNodes": [
-    { "node": "<node name>", "status": "VERIFIED"|"UNVERIFIED"|"ANOMALOUS", "detail": "<detail>" }
-  ],
-  "graphConsistency": <number 0-100>,
-  "redFlags": ["<flag 1>", "<flag 2>"],
-  "watermarkStatus": "CLEAN" | "FLAGGED" | "UNKNOWN",
-  "recommendation": "<action>"
-}`;
-
-    const userPrompt = `Analyze this identity profile for synthetic/stolen identity signals:
-
-Name: ${identityData?.name || 'Not provided'}
-Email: ${identityData?.email || 'Not provided'}
-Phone: ${identityData?.phone || 'Not provided'}
-IP Address: ${identityData?.ip || 'Not provided'}
-Account age: ${identityData?.accountAge || 'Unknown'}
-Profile completeness: ${identityData?.profileCompleteness || 'Unknown'}%
-Linked accounts: ${identityData?.linkedAccounts || 0}
-Previous flags: ${identityData?.previousFlags || 0}
-Country: ${identityData?.country || 'Unknown'}
-Device fingerprint: ${identityData?.deviceFingerprint || 'Unknown'}
-
-Build an identity graph analysis and determine if this is a real person, a synthetic AI-generated identity, or a stolen real identity being used fraudulently.`;
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'HTTP-Referer': 'https://vemar-ai.vercel.app',
+        'X-Title': 'VEMAR.AI',
       },
       body: JSON.stringify({
         model: 'openai/gpt-oss-20b:free',
-        max_tokens: 700,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }],
+        max_tokens: 400,
+        messages: [{ role: 'user', content: prompt }],
       }),
     });
 
-    if (!response.ok) throw new Error(`Claude API error: ${response.status}`);
-
+    if (!response.ok) throw new Error(`OpenRouter error ${response.status}`);
     const data = await response.json();
-    const text = data.content[0].text;
+    const text = data.choices[0].message.content;
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('No JSON in response');
     const result = JSON.parse(jsonMatch[0]);
 
     return new Response(JSON.stringify({ success: true, result }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      status: 200, headers: { 'Content-Type': 'application/json' },
     });
   } catch (err) {
     return new Response(JSON.stringify({ success: false, error: err.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      status: 500, headers: { 'Content-Type': 'application/json' },
     });
   }
 }

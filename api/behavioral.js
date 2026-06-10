@@ -4,77 +4,42 @@ export default async function handler(req) {
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
   }
-
   try {
     const body = await req.json();
-    const { signals } = body;
+    const { signals, url, analysisType } = body;
 
-    const systemPrompt = `You are VEMAR AI's behavioral biometric analysis engine. You detect synthetic identities and bot behavior from behavioral telemetry.
+    const prompt = analysisType === 'url' && url
+      ? `You are a behavioral AI analyst. Analyze this URL for bot/synthetic activity: ${url}. Respond with ONLY this JSON: {"verdict":"HUMAN","riskScore":15,"confidence":85,"anomalies":[{"type":"Pattern Analysis","severity":"LOW","description":"No bot patterns detected"}],"humanLikelihood":85,"sessionFingerprint":"sf_abc123","recommendation":"No action required"}`
+      : `You are a behavioral AI analyst. Analyze these behavioral signals: avgKeyHold=${signals?.avgKeyHold||'N/A'}ms, rhythmVariance=${signals?.rhythmVariance||'N/A'}, typingSpeed=${signals?.typingSpeed||'N/A'}wpm, mouseSpeed=${signals?.mouseSpeed||'N/A'}px/s, linearity=${signals?.linearity||'N/A'}, sessionDuration=${signals?.sessionDuration||'N/A'}s. Respond with ONLY this JSON: {"verdict":"HUMAN","riskScore":15,"confidence":85,"anomalies":[{"type":"Keystroke Dynamics","severity":"LOW","description":"Natural human typing rhythm detected"}],"humanLikelihood":85,"sessionFingerprint":"sf_abc123","recommendation":"No action required"}`;
 
-Always respond with ONLY valid JSON in this exact structure:
-{
-  "verdict": "HUMAN" | "SUSPICIOUS" | "BOT" | "SYNTHETIC_IDENTITY",
-  "riskScore": <number 0-100>,
-  "confidence": <number 0-100>,
-  "anomalies": [
-    { "type": "<anomaly type>", "severity": "LOW"|"MEDIUM"|"HIGH", "description": "<detail>" }
-  ],
-  "humanLikelihood": <number 0-100>,
-  "sessionFingerprint": "<short hash-like string>",
-  "recommendation": "<action to take>"
-}`;
-
-    const userPrompt = `Analyze these behavioral signals for synthetic identity / bot detection:
-
-Keystroke dynamics:
-- Average key hold duration: ${signals?.avgKeyHold || 'N/A'} ms
-- Keystroke rhythm variance: ${signals?.rhythmVariance || 'N/A'}
-- Typing speed: ${signals?.typingSpeed || 'N/A'} WPM
-
-Mouse movement:
-- Average movement speed: ${signals?.mouseSpeed || 'N/A'} px/s
-- Movement linearity score: ${signals?.linearity || 'N/A'} (0=human curves, 1=bot straight lines)
-- Click pattern regularity: ${signals?.clickRegularity || 'N/A'}
-
-Session context:
-- Session duration so far: ${signals?.sessionDuration || 'N/A'} seconds
-- Actions per minute: ${signals?.actionsPerMinute || 'N/A'}
-- User agent: ${signals?.userAgent || 'unknown'}
-- Timezone offset: ${signals?.timezoneOffset || 'N/A'} minutes
-
-Analyze these patterns and determine if this is a real human, a bot, or a synthetic identity.`;
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'HTTP-Referer': 'https://vemar-ai.vercel.app',
+        'X-Title': 'VEMAR.AI',
       },
       body: JSON.stringify({
         model: 'openai/gpt-oss-20b:free',
-        max_tokens: 600,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }],
+        max_tokens: 400,
+        messages: [{ role: 'user', content: prompt }],
       }),
     });
 
-    if (!response.ok) throw new Error(`Claude API error: ${response.status}`);
-
+    if (!response.ok) throw new Error(`OpenRouter error ${response.status}`);
     const data = await response.json();
-    const text = data.content[0].text;
+    const text = data.choices[0].message.content;
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('No JSON in response');
     const result = JSON.parse(jsonMatch[0]);
 
     return new Response(JSON.stringify({ success: true, result }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      status: 200, headers: { 'Content-Type': 'application/json' },
     });
   } catch (err) {
     return new Response(JSON.stringify({ success: false, error: err.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      status: 500, headers: { 'Content-Type': 'application/json' },
     });
   }
 }
