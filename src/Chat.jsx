@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import SarvamVoice from './components/SarvamVoice'
 
 const QUICK = [
   'How does AI voice cloning work?',
@@ -12,6 +13,8 @@ const KB = [
   {
     keys: ['voice clon', 'audio deepfake', 'voice synth'],
     answer: `VOICE CLONING works by training a neural TTS model on a target speaker's audio — sometimes as little as 3–5 seconds of clean speech. Tools like ElevenLabs, Murf, and PlayHT can generate convincing clones in seconds.
+    const [lastAiMsg, setLastAiMsg] = useState(null)
+const [speakTarget, setSpeakTarget] = useState(null)
 
 DETECTION SIGNALS:
 • Non-linear spectral artifacts in the 4–8 kHz range
@@ -151,20 +154,53 @@ export default function Chat() {
   const inputRef = useRef()
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs, loading])
+const aiText = getAnswer(m)
+setMsgs(p => [...p, { role: 'ai', text: aiText }])
+setLastAiMsg(aiText)
+setSpeakTarget(null) // reset so Listen button re-arms
 
-  const send = (text) => {
-    const m = (text || input).trim()
-    if (!m || loading) return
-    setInput('')
-    setLoading(true)
-    setMsgs(p => [...p, { role: 'user', text: m }])
-    // Simulate a brief "thinking" delay for realism
-    setTimeout(() => {
-      setMsgs(p => [...p, { role: 'ai', text: getAnswer(m) }])
-      setLoading(false)
-      inputRef.current?.focus()
-    }, 600)
-  }
+// In the JSX, add the widget between the quick-prompts and the input row:
+<SarvamVoice
+  onTranscript={(text) => {
+    setInput(text)
+    inputRef.current?.focus()
+  }}
+  textToSpeak={speakTarget}
+  onSpeakDone={() => setSpeakTarget(null)}
+/>
+
+{lastAiMsg && !speakTarget && (
+  <button
+    className="sv-use-btn"
+    style={{ marginBottom: 8 }}
+    onClick={() => setSpeakTarget(lastAiMsg)}
+  >
+    🔊 Listen to last response
+  </button>
+)}
+
+Step 4 — Verify .env and Vercel config:
+bash# Check your local .env has:
+grep SARVAM .env
+
+# If missing, add it:
+echo "SARVAM_API_KEY=your_key_here" >> .env.local
+
+# On Vercel — add via dashboard:
+# Project → Settings → Environment Variables → SARVAM_API_KEY
+# Or via CLI:
+vercel env add SARVAM_API_KEY
+
+Step 5 — Build and deploy:
+bash# Verify the CSS is clean first
+grep -n "export default\|import {" src/index.css
+# Should return nothing
+
+npm run build
+git add src/components/SarvamVoice.jsx src/index.css src/Chat.jsx dist/ -f
+git commit -m "feat: integrate SarvamVoice widget (STT + TTS)"
+git push origin main
+Two things to watch for: The Sarvam STT endpoint returns { transcript: "..." } — your api/stt.js already handles that. The TTS returns { audios: ["base64..."] } — the widget decodes that and plays it as a <audio> blob. If you hit CORS issues locally, run through Vercel preview (vercel dev) since the /api/ routes need the edge runtime.Sonnet 4.6 Max
 
   return (
     <div className="page-enter" style={{ padding: '2rem' }}>
