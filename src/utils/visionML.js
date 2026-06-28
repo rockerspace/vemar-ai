@@ -216,14 +216,20 @@ export async function analyzeImageElement(source) {
   const faceStats = regionStats(residual, W, H, box);
   const bgBox = box.y0 > 40 ? { x0: 0, y0: 0, x1: W, y1: box.y0 - 4 } : { x0: 0, y0: Math.min(H - 4, box.y1 + 4), x1: W, y1: H };
   const bgStats = regionStats(residual, W, H, bgBox);
-  const noiseRatio = bgStats.std > 0.01 ? faceStats.std / bgStats.std : 1;
+  const reliableBg = bgStats.std > 1.2; // background needs real texture to be a meaningful reference
+  const rawRatio = reliableBg ? faceStats.std / bgStats.std : null;
+  const noiseRatio = rawRatio === null ? null : Math.min(rawRatio, 9.99);
 
-  if (noiseRatio < 0.45) {
+  if (noiseRatio === null) {
+    signals.push({ name: 'Noise Consistency', severity: 'LOW', detail: 'Background region has too little texture for a reliable noise comparison — skipped.' });
+  } else if (noiseRatio < 0.45) {
     riskScore += 25;
     signals.push({ name: 'Noise Consistency', severity: 'HIGH', detail: `Face region is markedly smoother (ratio ${round(noiseRatio,2)}) than the background — a common signature of a synthetic face composited onto a real photo.` });
   } else if (noiseRatio < 0.7) {
     riskScore += 10;
     signals.push({ name: 'Noise Consistency', severity: 'MEDIUM', detail: `Face region noise is somewhat lower (ratio ${round(noiseRatio,2)}) than the background.` });
+  } else if (noiseRatio > 4) {
+    signals.push({ name: 'Noise Consistency', severity: 'LOW', detail: `Background is unusually flat relative to the face region (ratio ${round(noiseRatio,2)}) — likely a plain backdrop, not a fakery signal.` });
   } else {
     signals.push({ name: 'Noise Consistency', severity: 'LOW', detail: `Face and background noise levels are consistent (ratio ${round(noiseRatio,2)}).` });
   }
