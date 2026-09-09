@@ -1,0 +1,6 @@
+{
+  "name": "VEMAR AI",
+  "description": "Voice, Entity & Media Authentication and Risk AI — Production-grade multi-modal synthetic media forensics, voice anti-spoofing, C2PA cryptographic provenance, and pre-trade execution defense across Indian (SEBI) and US (SEC/FINRA) capital markets.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
