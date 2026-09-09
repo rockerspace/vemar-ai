@@ -15,9 +15,11 @@ import {
   ArrowRight,
   Sparkles,
   Search,
-  Filter
+  Filter,
+  Cloud
 } from 'lucide-react';
 import { Jurisdiction } from '../types';
+import { GoogleCloudProductionAudit } from './GoogleCloudProductionAudit';
 
 interface VemarGapAnalysisProps {
   jurisdiction: Jurisdiction;
@@ -42,6 +44,7 @@ export const VemarGapAnalysis: React.FC<VemarGapAnalysisProps> = ({
   onNavigateToPitch,
   onNavigateToArchitecture
 }) => {
+  const [activeAnalysisMode, setActiveAnalysisMode] = useState<'GOOGLE_AI_STACK' | 'INDUSTRY_GAPS'>('GOOGLE_AI_STACK');
   const [selectedFilter, setSelectedFilter] = useState<'ALL' | 'CRITICAL' | 'REGULATORY'>('ALL');
 
   const gaps: GapItem[] = [
@@ -147,43 +150,85 @@ export const VemarGapAnalysis: React.FC<VemarGapAnalysisProps> = ({
 
   return (
     <div id="vemar-gap-analysis" className="space-y-8">
-      {/* Overview Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-        <div className="max-w-4xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs font-semibold">
-            <AlertOctagon className="w-3.5 h-3.5" />
-            <span>Market Surveillance Gap Analysis & Production Readiness</span>
-          </div>
-
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            The 8 Critical Industry Gaps Solved by VEMAR AI
-          </h2>
-
-          <p className="text-sm text-slate-300 leading-relaxed">
-            Legacy financial market surveillance was architected for a world of human brokers and slow paper disclosures. With generative AI weaponizing capital markets, legacy architectures exhibit fatal gaps. VEMAR AI closes every one with production-grade engineering.
-          </p>
-
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onNavigateToArchitecture}
-              className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold font-sans flex items-center gap-2 transition-all shadow-md"
-            >
-              <Cpu className="w-3.5 h-3.5" />
-              <span>Inspect Neural Architecture</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={onNavigateToPitch}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold font-sans flex items-center gap-2 border border-slate-700 transition-all"
-            >
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Review Dual-Market Investor Pitch Decks</span>
-            </button>
-          </div>
+      {/* Top Level Audit Perspective Switcher */}
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-2.5 rounded-2xl shadow-xl">
+        <div className="flex items-center gap-2 px-3">
+          <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            Audit Perspective:
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            id="audit-perspective-google-stack-btn"
+            type="button"
+            onClick={() => setActiveAnalysisMode('GOOGLE_AI_STACK')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              activeAnalysisMode === 'GOOGLE_AI_STACK'
+                ? 'bg-gradient-to-r from-cyan-600 to-indigo-600 text-white shadow-lg'
+                : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <Cloud className="w-4 h-4 text-cyan-300" />
+            <span>Google Cloud AI Production Blueprint (Pub/Sub, Dataflow, Vertex AI, Cloud Run, Cloud SQL)</span>
+          </button>
+          <button
+            id="audit-perspective-industry-gaps-btn"
+            type="button"
+            onClick={() => setActiveAnalysisMode('INDUSTRY_GAPS')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              activeAnalysisMode === 'INDUSTRY_GAPS'
+                ? 'bg-gradient-to-r from-cyan-600 to-indigo-600 text-white shadow-lg'
+                : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <AlertOctagon className="w-4 h-4 text-amber-400" />
+            <span>Market Surveillance Industry Gaps (8 Flaws)</span>
+          </button>
         </div>
       </div>
+
+      {activeAnalysisMode === 'GOOGLE_AI_STACK' ? (
+        <GoogleCloudProductionAudit jurisdiction={jurisdiction} />
+      ) : (
+        <>
+          {/* Overview Banner */}
+          <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+            <div className="max-w-4xl space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs font-semibold">
+                <AlertOctagon className="w-3.5 h-3.5" />
+                <span>Market Surveillance Gap Analysis & Production Readiness</span>
+              </div>
+
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                The 8 Critical Industry Gaps Solved by VEMAR AI
+              </h2>
+
+              <p className="text-sm text-slate-300 leading-relaxed">
+                Legacy financial market surveillance was architected for a world of human brokers and slow paper disclosures. With generative AI weaponizing capital markets, legacy architectures exhibit fatal gaps. VEMAR AI closes every one with production-grade engineering.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={onNavigateToArchitecture}
+                  className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold font-sans flex items-center gap-2 transition-all shadow-md"
+                >
+                  <Cpu className="w-3.5 h-3.5" />
+                  <span>Inspect Neural Architecture</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onNavigateToPitch}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold font-sans flex items-center gap-2 border border-slate-700 transition-all"
+                >
+                  <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Review Dual-Market Investor Pitch Decks</span>
+                </button>
+              </div>
+            </div>
+          </div>
 
       {/* Production Readiness Scorecard Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -327,6 +372,8 @@ export const VemarGapAnalysis: React.FC<VemarGapAnalysisProps> = ({
           </div>
         ))}
       </div>
-    </div>
-  );
+    </>
+  )}
+</div>
+);
 };
