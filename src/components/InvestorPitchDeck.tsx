@@ -25,10 +25,12 @@ import {
   Clock,
   ArrowRight,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Cpu
 } from 'lucide-react';
 import { VemarLogo } from './VemarLogo';
 import { Jurisdiction } from '../types';
+import { TechnicalArchitectureDiagram } from './TechnicalArchitectureDiagram';
 
 interface InvestorPitchDeckProps {
   initialJurisdiction?: Jurisdiction;
@@ -38,7 +40,7 @@ interface InvestorPitchDeckProps {
 }
 
 type PitchDeckView = 'IN' | 'US' | 'COMPARISON';
-type SectionTab = 'executive' | 'problem' | 'solution' | 'tam' | 'business_model' | 'regulatory_moat' | 'financials' | 'the_ask' | 'roi_calculator';
+type SectionTab = 'executive' | 'problem' | 'solution' | 'architecture' | 'tam' | 'business_model' | 'regulatory_moat' | 'financials' | 'the_ask' | 'roi_calculator';
 
 export const InvestorPitchDeck: React.FC<InvestorPitchDeckProps> = ({
   initialJurisdiction = 'IN',
@@ -199,6 +201,7 @@ Contact: ir@vemar.ai | Cryptographic Verification Hash: 9f82c401e7b9932a
               { id: 'executive', label: 'Executive Summary', icon: Briefcase },
               { id: 'problem', label: 'Market Crisis & Gaps', icon: Target },
               { id: 'solution', label: 'VEMAR Technology', icon: Layers },
+              { id: 'architecture', label: 'Technical Architecture', icon: Cpu },
               { id: 'tam', label: 'Market Sizing (TAM)', icon: PieChart },
               { id: 'business_model', label: 'Unit Economics & Tiers', icon: DollarSign },
               { id: 'regulatory_moat', label: 'Regulatory Moat', icon: ShieldCheck },
@@ -435,42 +438,72 @@ Contact: ir@vemar.ai | Cryptographic Verification Hash: 9f82c401e7b9932a
       {/* 4. SECTION: VEMAR TECHNOLOGY & NEURAL PIPELINE                       */}
       {/* ==================================================================== */}
       {deckView !== 'COMPARISON' && activeSection === 'solution' && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
-            <div>
-              <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
-                Proprietary Technological Architecture
-              </span>
-              <h3 className="text-xl font-bold text-white mt-1">The VEMAR 5-Stage Neural Defense Matrix</h3>
+        <div className="space-y-6">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+              <div>
+                <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
+                  Proprietary Technological Architecture
+                </span>
+                <h3 className="text-xl font-bold text-white mt-1">The VEMAR 5-Stage Neural Defense Matrix</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveSection('architecture')}
+                  className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold font-sans flex items-center gap-1.5 transition-all shadow-md"
+                >
+                  <Cpu className="w-3.5 h-3.5" />
+                  <span>Interactive Architecture Diagram</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={onNavigateToArchitecture}
+                  className="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold font-sans flex items-center gap-1.5 transition-all shadow-md"
+                >
+                  <span>Launch Full Studio</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
-            <button
-              type="button"
-              onClick={onNavigateToArchitecture}
-              className="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold font-sans flex items-center gap-1.5 transition-all shadow-md"
-            >
-              <span>Launch Full Interactive Studio</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+              {[
+                { letter: 'V', title: 'Voice Biometrics', tech: 'RawNet3 + WavLM', stat: '42ms SLA' },
+                { letter: 'E', title: 'Entity Provenance', tech: 'C2PA + SHA-256 PKI', stat: '100% Deterministic' },
+                { letter: 'M', title: 'Media Forensics', tech: 'ResNet STT + Viseme Flow', stat: '99.4% F1-Score' },
+                { letter: 'A', title: 'Algorithmic Radar', tech: 'Graph Neural Networks', stat: '1,200+ Channels' },
+                { letter: 'R', title: 'Response & Halts', tech: 'FIX 4.4 Tag 35=D Gateways', stat: '<16ms Execution' }
+              ].map((node) => (
+                <div key={node.letter} className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-center sm:text-left">
+                  <span className="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 font-mono font-black text-base flex items-center justify-center mx-auto sm:mx-0">
+                    {node.letter}
+                  </span>
+                  <div className="font-bold text-white text-xs">{node.title}</div>
+                  <div className="text-[11px] text-slate-400 font-mono">{node.tech}</div>
+                  <div className="text-[10px] text-emerald-400 font-mono pt-1 font-semibold">{node.stat}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-            {[
-              { letter: 'V', title: 'Voice Biometrics', tech: 'RawNet3 + WavLM', stat: '42ms SLA' },
-              { letter: 'E', title: 'Entity Provenance', tech: 'C2PA + SHA-256 PKI', stat: '100% Deterministic' },
-              { letter: 'M', title: 'Media Forensics', tech: 'ResNet STT + Viseme Flow', stat: '99.4% F1-Score' },
-              { letter: 'A', title: 'Algorithmic Radar', tech: 'Graph Neural Networks', stat: '1,200+ Channels' },
-              { letter: 'R', title: 'Response & Halts', tech: 'FIX 4.4 Tag 35=D Gateways', stat: '<16ms Execution' }
-            ].map((node) => (
-              <div key={node.letter} className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-center sm:text-left">
-                <span className="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 font-mono font-black text-base flex items-center justify-center mx-auto sm:mx-0">
-                  {node.letter}
-                </span>
-                <div className="font-bold text-white text-xs">{node.title}</div>
-                <div className="text-[11px] text-slate-400 font-mono">{node.tech}</div>
-                <div className="text-[10px] text-emerald-400 font-mono pt-1 font-semibold">{node.stat}</div>
-              </div>
-            ))}
-          </div>
+          {/* Embedded Architecture Diagram inside Solution tab */}
+          <TechnicalArchitectureDiagram
+            jurisdiction={isIndia ? 'IN' : 'GLOBAL'}
+            onSelectJurisdiction={onSelectJurisdiction}
+          />
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* 4B. DEDICATED SECTION: TECHNICAL ARCHITECTURE & TOPOLOGY             */}
+      {/* ==================================================================== */}
+      {deckView !== 'COMPARISON' && activeSection === 'architecture' && (
+        <div className="space-y-6">
+          <TechnicalArchitectureDiagram
+            jurisdiction={isIndia ? 'IN' : 'GLOBAL'}
+            onSelectJurisdiction={onSelectJurisdiction}
+          />
         </div>
       )}
 
