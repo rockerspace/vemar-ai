@@ -2,6 +2,10 @@ export type UserRole = 'retail_investor' | 'broker_compliance' | 'mii_regulator'
 
 export type Jurisdiction = 'IN' | 'US' | 'GLOBAL';
 
+export type Language = 'en' | 'hi';
+
+export type MarketMode = 'IN' | 'GLOBAL';
+
 export type ThreatChannel = 'video_frame' | 'audio_call' | 'email' | 'social_post' | 'circular';
 
 export type ThreatLevel = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'AUTHENTIC';

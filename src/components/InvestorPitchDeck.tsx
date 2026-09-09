@@ -46,7 +46,7 @@ export const InvestorPitchDeck: React.FC<InvestorPitchDeckProps> = ({
   onNavigateToScanner,
   onNavigateToArchitecture
 }) => {
-  const [deckView, setDeckView] = useState<PitchDeckView>(initialJurisdiction === 'US' ? 'US' : 'IN');
+  const [deckView, setDeckView] = useState<PitchDeckView>(initialJurisdiction === 'US' || initialJurisdiction === 'GLOBAL' ? 'US' : 'IN');
   const [activeSection, setActiveSection] = useState<SectionTab>('executive');
   const [copiedMemo, setCopiedMemo] = useState<boolean>(false);
 
@@ -58,8 +58,10 @@ export const InvestorPitchDeck: React.FC<InvestorPitchDeckProps> = ({
   // Sync jurisdiction changes
   const handleDeckSwitch = (view: PitchDeckView) => {
     setDeckView(view);
-    if (view === 'IN' || view === 'US') {
-      onSelectJurisdiction?.(view);
+    if (view === 'IN') {
+      onSelectJurisdiction?.('IN');
+    } else if (view === 'US') {
+      onSelectJurisdiction?.('GLOBAL');
     }
   };
 

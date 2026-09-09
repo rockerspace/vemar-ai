@@ -16,10 +16,13 @@ import {
   Play,
   Layers,
   ChevronRight,
-  AlertOctagon
+  AlertOctagon,
+  Languages,
+  BookOpen
 } from 'lucide-react';
 import { VemarLogo } from './VemarLogo';
 import { Jurisdiction } from '../types';
+import { useLocalization } from '../context/LocalizationContext';
 
 interface LandingPageProps {
   jurisdiction: Jurisdiction;
@@ -32,7 +35,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onSelectJurisdiction,
   onEnterPlatform
 }) => {
-  const isUS = jurisdiction === 'US';
+  const { language, setLanguage, isHindi, setMarket, openGlossary, t } = useLocalization();
+  const isUS = jurisdiction === 'US' || jurisdiction === 'GLOBAL';
   const [activeIncidentIndex, setActiveIncidentIndex] = useState(0);
 
   const liveThreatBenchmarks = isUS
@@ -124,29 +128,72 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Quick Market Toggle in Top Bar */}
+            {/* Quick Market Toggle in Top Bar (India & Global) */}
             <div className="flex items-center bg-slate-950/80 p-0.5 rounded-lg border border-slate-800 text-[11px]">
               <button
                 type="button"
-                onClick={() => onSelectJurisdiction('IN')}
+                onClick={() => {
+                  setMarket('IN');
+                  onSelectJurisdiction('IN');
+                }}
                 className={`px-2 py-0.5 rounded flex items-center gap-1 transition-all ${
                   jurisdiction === 'IN' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-400 hover:text-white'
                 }`}
+                title="India (SEBI)"
               >
                 <span>🇮🇳</span>
-                <span>India</span>
+                <span>{isHindi ? 'भारत' : 'India'}</span>
               </button>
               <button
                 type="button"
-                onClick={() => onSelectJurisdiction('US')}
+                onClick={() => {
+                  setMarket('GLOBAL');
+                  onSelectJurisdiction('GLOBAL');
+                }}
                 className={`px-2 py-0.5 rounded flex items-center gap-1 transition-all ${
-                  jurisdiction === 'US' ? 'bg-blue-600 text-white font-bold' : 'text-slate-400 hover:text-white'
+                  jurisdiction === 'GLOBAL' || jurisdiction === 'US' ? 'bg-blue-600 text-white font-bold' : 'text-slate-400 hover:text-white'
                 }`}
+                title="Global (SEC/FINRA)"
               >
-                <span>🇺🇸</span>
-                <span>US</span>
+                <span>🌐</span>
+                <span>{isHindi ? 'वैश्विक' : 'Global'}</span>
               </button>
             </div>
+
+            {/* Language Switcher */}
+            <div className="flex items-center bg-slate-950/80 p-0.5 rounded-lg border border-slate-800 text-[11px]">
+              <button
+                type="button"
+                onClick={() => setLanguage('en')}
+                className={`px-1.5 py-0.5 rounded font-semibold transition-all ${
+                  language === 'en' ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-white'
+                }`}
+                title="English"
+              >
+                EN
+              </button>
+              <button
+                type="button"
+                onClick={() => setLanguage('hi')}
+                className={`px-1.5 py-0.5 rounded font-semibold transition-all ${
+                  language === 'hi' ? 'bg-amber-600 text-white font-bold' : 'text-slate-400 hover:text-white'
+                }`}
+                title="हिन्दी"
+              >
+                हिन्दी
+              </button>
+            </div>
+
+            {/* SEBI Glossary launcher */}
+            <button
+              type="button"
+              onClick={openGlossary}
+              className="px-2 py-0.5 rounded-lg bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-800 text-emerald-300 text-[11px] font-semibold flex items-center gap-1 transition-all"
+              title={isHindi ? 'सेबी वित्तीय शब्दावली देखें' : 'View SEBI Capital Markets Hindi/English Glossary'}
+            >
+              <BookOpen className="w-3 h-3 text-emerald-400" />
+              <span>{isHindi ? 'सेबी शब्दावली' : 'SEBI Glossary'}</span>
+            </button>
 
             <button
               id="landing-quick-enter-btn"

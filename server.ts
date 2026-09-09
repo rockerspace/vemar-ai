@@ -523,8 +523,8 @@ app.post('/api/verify-communication', (req, res) => {
   try {
     const { queryType, identifier, contentText, hashProvided, jurisdiction = 'IN' } = req.body;
 
-    // --- US JURISDICTION ---
-    if (jurisdiction === 'US') {
+    // --- US & GLOBAL JURISDICTION ---
+    if (jurisdiction === 'US' || jurisdiction === 'GLOBAL') {
       if (queryType === 'circular' || queryType === 'sec_edgar') {
         const queryTerm = (identifier || contentText || '').toLowerCase().trim();
         const matched = SEC_EDGAR_FILINGS_DB.find(
@@ -857,13 +857,13 @@ app.post('/api/sign-disclosure', (req, res) => {
   const provenanceSeal = {
     c2paStandardVersion: '2.1-FINSEC',
     provenanceSealId: `SEAL-${Date.now()}-${hexHash.slice(0, 8).toUpperCase()}`,
-    issuerName: issuerName || (jurisdiction === 'US' ? 'NYSE/Nasdaq Listed Issuer' : 'NSE Listed Issuer'),
-    issuingCategory: issuingCategory || (jurisdiction === 'US' ? 'SEC Form 8-K / Reg FD Material Event' : 'SEBI LODR Regulation 30'),
+    issuerName: issuerName || (jurisdiction === 'US' || jurisdiction === 'GLOBAL' ? 'NYSE/Nasdaq Listed Issuer' : 'NSE Listed Issuer'),
+    issuingCategory: issuingCategory || (jurisdiction === 'US' || jurisdiction === 'GLOBAL' ? 'SEC Form 8-K / Reg FD Material Event' : 'SEBI LODR Regulation 30'),
     documentTitle: documentTitle || 'Material Event Announcement',
     sha256Digest: hexHash,
     issuedTimestamp: timestamp,
     jurisdiction,
-    verifiedRegistryRoot: jurisdiction === 'US'
+    verifiedRegistryRoot: (jurisdiction === 'US' || jurisdiction === 'GLOBAL')
       ? 'CN=SEC-EDGAR-PROVENANCE-ROOT, O=Securities and Exchange Commission, C=US'
       : 'CN=BSE-NSE-DISCLOSURE-REPOSITORY, O=Securities and Exchange Board of India, C=IN',
     publicVerificationUrl: `https://sentinel.securities.gov/verify/${hexHash.slice(0, 12)}`,

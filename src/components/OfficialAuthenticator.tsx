@@ -15,30 +15,33 @@ import {
 } from 'lucide-react';
 import { verifyCommunication, VerifyCommunicationResponse } from '../services/api';
 import { Jurisdiction } from '../types';
+import { useLocalization } from '../context/LocalizationContext';
 
 interface OfficialAuthenticatorProps {
   jurisdiction?: Jurisdiction;
 }
 
 export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ jurisdiction = 'IN' as Jurisdiction }) => {
+  const { isHindi } = useLocalization();
+  const isUS = jurisdiction === 'US' || jurisdiction === 'GLOBAL';
   const [activeTab, setActiveTab] = useState<'circulars' | 'intermediaries'>('circulars');
   
   // Search query states
   const [circularQuery, setCircularQuery] = useState(
-    jurisdiction === 'US' ? '0000789019-24-000045' : 'SEBI/HO/MIRSD/MIRSD-PoD-1/P/CIR/2024/89'
+    isUS ? '0000789019-24-000045' : 'SEBI/HO/MIRSD/MIRSD-PoD-1/P/CIR/2024/89'
   );
   const [circularResult, setCircularResult] = useState<VerifyCommunicationResponse | null>(null);
   const [circularLoading, setCircularLoading] = useState(false);
 
   const [intermediaryQuery, setIntermediaryQuery] = useState(
-    jurisdiction === 'US' ? '116797' : 'INZ000031633'
+    isUS ? '116797' : 'INZ000031633'
   );
   const [intermediaryResult, setIntermediaryResult] = useState<VerifyCommunicationResponse | null>(null);
   const [intermediaryLoading, setIntermediaryLoading] = useState(false);
 
   // Update default query when jurisdiction changes
   useEffect(() => {
-    if (jurisdiction === 'US') {
+    if (isUS) {
       setCircularQuery('0000789019-24-000045');
       setIntermediaryQuery('116797');
     } else {
@@ -47,7 +50,7 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
     }
     setCircularResult(null);
     setIntermediaryResult(null);
-  }, [jurisdiction]);
+  }, [jurisdiction, isUS]);
 
   // Verify Filing / Circular Handler
   const handleVerifyCircular = async (queryText?: string) => {
@@ -56,7 +59,7 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
     setCircularLoading(true);
     try {
       const res = await verifyCommunication({
-        queryType: jurisdiction === 'US' ? 'sec_edgar' : 'circular',
+        queryType: isUS ? 'sec_edgar' : 'circular',
         identifier: query,
         jurisdiction: jurisdiction as Jurisdiction
       });
@@ -75,7 +78,7 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
     setIntermediaryLoading(true);
     try {
       const res = await verifyCommunication({
-        queryType: jurisdiction === 'US' ? 'finra' : 'intermediary',
+        queryType: isUS ? 'finra' : 'intermediary',
         identifier: query,
         jurisdiction: jurisdiction as Jurisdiction
       });
@@ -99,10 +102,10 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
             Parallel Market Integrity Framework
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-            {jurisdiction === 'US' ? 'US SEC EDGAR & FINRA Master Registry Verifier' : 'SEBI & Exchange Official Registry Authenticator'}
+            {isUS ? 'US SEC EDGAR & FINRA Master Registry Verifier' : 'SEBI & Exchange Official Registry Authenticator'}
           </h2>
           <p className="text-sm text-slate-300 mt-2 leading-relaxed">
-            {jurisdiction === 'US'
+            {isUS
               ? 'Real-time cryptographic validation of SEC EDGAR Accession Numbers, Form 8-K / 10-K material event filings, and FINRA BrokerCheck CRD licensing status to eliminate market-manipulating fake corporate disclosures.'
               : 'Direct verification against SEBI master circular gazettes, exchange notification hashes (NSE/BSE), and authorized intermediary registration numbers (Stock Brokers, Research Analysts, Investment Advisers).'}
           </p>
@@ -121,7 +124,7 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
             }`}
           >
             <FileCheck className="w-4 h-4" />
-            {jurisdiction === 'US' ? 'SEC EDGAR Filings (8-K / 10-K / Form 4)' : 'SEBI & Exchange Circulars / Orders'}
+            {isUS ? 'SEC EDGAR Filings (8-K / 10-K / Form 4)' : 'SEBI & Exchange Circulars / Orders'}
           </button>
 
           <button
@@ -135,7 +138,7 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
             }`}
           >
             <Building2 className="w-4 h-4" />
-            {jurisdiction === 'US' ? 'FINRA BrokerCheck & RIA Licensing (CRD)' : 'SEBI Registered Intermediaries (Brokers / RAs)'}
+            {isUS ? 'FINRA BrokerCheck & RIA Licensing (CRD)' : 'SEBI Registered Intermediaries (Brokers / RAs)'}
           </button>
         </div>
       </div>
@@ -147,10 +150,10 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
           <div className="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <Search className="w-4 h-4 text-cyan-400" />
-              {jurisdiction === 'US' ? 'Verify SEC EDGAR Filing Accession' : 'Verify Circular or Regulatory Order'}
+              {isUS ? 'Verify SEC EDGAR Filing Accession' : 'Verify Circular or Regulatory Order'}
             </h3>
             <p className="text-xs text-slate-400">
-              {jurisdiction === 'US'
+              {isUS
                 ? 'Enter SEC Accession Number (e.g. 0000789019-24-000045), CIK, ticker (MSFT, AAPL, TSLA), or SHA-256 digest:'
                 : 'Enter the exact circular reference number, document title keywords, or SHA-256 digital digest:'}
             </p>
@@ -161,7 +164,7 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
                 Quick Test Records:
               </span>
               <div className="flex flex-col gap-1.5">
-                {jurisdiction === 'US' ? (
+                {isUS ? (
                   <>
                     <button
                       type="button"
@@ -224,7 +227,7 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
                 type="text"
                 value={circularQuery}
                 onChange={(e) => setCircularQuery(e.target.value)}
-                placeholder={jurisdiction === 'US' ? 'Enter SEC Accession # or Ticker...' : 'Enter Circular # (e.g. SEBI/HO/...)'}
+                placeholder={isUS ? 'Enter SEC Accession # or Ticker...' : 'Enter Circular # (e.g. SEBI/HO/...)'}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 placeholder:text-slate-500 font-mono focus:outline-none focus:border-cyan-500"
               />
 
@@ -260,7 +263,7 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
               <div className="h-64 flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-800 rounded-xl">
                 <FileCheck className="w-10 h-10 text-slate-600 mb-2" />
                 <p className="text-xs text-slate-400 font-medium">
-                  {jurisdiction === 'US'
+                  {isUS
                     ? 'No SEC EDGAR filing queried yet. Run an Accession validation on the left.'
                     : 'No circular queried yet. Choose a benchmark or type a reference number.'}
                 </p>
@@ -284,12 +287,12 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
                     <div>
                       <h4 className="text-sm font-bold text-white">
                         {circularResult.verified
-                          ? (jurisdiction === 'US' ? 'Verified Authentic SEC EDGAR Filing' : 'Verified Authentic Regulatory Circular')
-                          : (jurisdiction === 'US' ? 'Suspected Counterfeit SEC Filing (Rule 10b-5 Breach)' : 'Unverified or Counterfeit Regulatory Order')}
+                          ? (isUS ? 'Verified Authentic SEC EDGAR Filing' : 'Verified Authentic Regulatory Circular')
+                          : (isUS ? 'Suspected Counterfeit SEC Filing (Rule 10b-5 Breach)' : 'Unverified or Counterfeit Regulatory Order')}
                       </h4>
                       <p className="text-xs mt-1 text-slate-300 leading-relaxed">
                         {circularResult.warning ||
-                          (jurisdiction === 'US'
+                          (isUS
                             ? 'Cryptographic integrity matches the SEC EDGAR master depository. All electronic signatures confirmed.'
                             : 'This document is officially registered in the SEBI/Exchange gazette with valid public key signatures.')}
                       </p>
@@ -338,10 +341,10 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
           <div className="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <Building2 className="w-4 h-4 text-cyan-400" />
-              {jurisdiction === 'US' ? 'FINRA BrokerCheck & Firm Registry' : 'Verify Registered Broker or Advisor'}
+              {isUS ? 'FINRA BrokerCheck & Firm Registry' : 'Verify Registered Broker or Advisor'}
             </h3>
             <p className="text-xs text-slate-400">
-              {jurisdiction === 'US'
+              {isUS
                 ? 'Enter FINRA Central Registration Depository (CRD) number or registered firm name (Citadel, Robinhood, Morgan Stanley):'
                 : 'Enter SEBI Registration Number (format: INZ..., INH..., INA...) or entity name:'}
             </p>
@@ -352,7 +355,7 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
                 Quick Test Licenses:
               </span>
               <div className="flex flex-col gap-1.5">
-                {jurisdiction === 'US' ? (
+                {isUS ? (
                   <>
                     <button
                       type="button"
@@ -415,7 +418,7 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
                 type="text"
                 value={intermediaryQuery}
                 onChange={(e) => setIntermediaryQuery(e.target.value)}
-                placeholder={jurisdiction === 'US' ? 'Enter CRD # (e.g. 116797)...' : 'Enter SEBI Reg # (e.g. INZ000031633)...'}
+                placeholder={isUS ? 'Enter CRD # (e.g. 116797)...' : 'Enter SEBI Reg # (e.g. INZ000031633)...'}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 placeholder:text-slate-500 font-mono focus:outline-none focus:border-cyan-500"
               />
 
@@ -451,7 +454,7 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
               <div className="h-64 flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-800 rounded-xl">
                 <Building2 className="w-10 h-10 text-slate-600 mb-2" />
                 <p className="text-xs text-slate-400 font-medium">
-                  {jurisdiction === 'US'
+                  {isUS
                     ? 'No FINRA firm queried yet. Select Citadel or Apex above to test.'
                     : 'No intermediary queried yet. Enter a SEBI registration number to verify.'}
                 </p>
@@ -474,12 +477,12 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
                     <div>
                       <h4 className="text-sm font-bold text-white">
                         {intermediaryResult.verified
-                          ? (jurisdiction === 'US' ? 'Active FINRA & SEC Registered Firm' : 'Active SEBI Registered Intermediary')
-                          : (jurisdiction === 'US' ? 'Barred / Unregistered Entity (FINRA Rule 2010 Violation)' : 'Unregistered or Barred Intermediary')}
+                          ? (isUS ? 'Active FINRA & SEC Registered Firm' : 'Active SEBI Registered Intermediary')
+                          : (isUS ? 'Barred / Unregistered Entity (FINRA Rule 2010 Violation)' : 'Unregistered or Barred Intermediary')}
                       </h4>
                       <p className="text-xs mt-1 text-slate-300 leading-relaxed">
                         {intermediaryResult.warning ||
-                          (jurisdiction === 'US'
+                          (isUS
                             ? 'Entity holds an active Broker-Dealer or Investment Adviser registration. Authorized to execute client orders.'
                             : 'This intermediary is in full compliance with SEBI licensing standards and authorized to provide services.')}
                       </p>
