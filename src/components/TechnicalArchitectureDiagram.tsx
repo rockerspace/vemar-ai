@@ -177,7 +177,7 @@ export const TechnicalArchitectureDiagram: React.FC<TechnicalArchitectureDiagram
       latencyMs: 42,
       protocol: 'TensorFlow Serving / TensorRT gRPC',
       techStack: 'Vertex AI Dedicated NVIDIA L4 GPUs / RawNet3 + WavLM',
-      compliance: 'ASVspoof 2021 Benchmark (99.4% ROC-AUC)',
+      compliance: 'ASVspoof Protocol Evaluated / Vocoder Phase Jitter',
       description: 'Analyzes 128-band Mel spectrograms, vocal tract linear prediction (LPCC), and vocoder phase jitter to identify voice clones and synthetic speech in 42ms.',
       samplePayload: `{
   "acousticFeatures": {
@@ -220,7 +220,7 @@ export const TechnicalArchitectureDiagram: React.FC<TechnicalArchitectureDiagram
       latencyMs: 115,
       protocol: 'Vision Transformer Tensor Pipeline',
       techStack: 'Vertex AI Spatial-Temporal Transformer + ResNet-50',
-      compliance: 'FaceForensics++ (99.1% F1-Score)',
+      compliance: 'FaceForensics++ Frame Forensic Pipeline',
       description: 'Processes broadcast video frames to detect viseme-to-phoneme lip sync delays, boundary pixel warping, and diffusion model residual noise patterns.',
       samplePayload: `{
   "opticalFlowTensor": "resnet50_viseme_layer4",
@@ -687,7 +687,7 @@ flowchart TB
                   </span>
                 </div>
                 <span className="text-[10px] font-mono text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded border border-purple-500/30">
-                  99.4% Precision
+                  Sub-380ms Inference
                 </span>
               </div>
 

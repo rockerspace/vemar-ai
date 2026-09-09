@@ -378,28 +378,31 @@ jobs:
 
 ---
 
-## 💼 Investor Pitch Decks & Unit Economics
+## 💼 Institutional Venture Capital Thesis & Core Moats
 
-VEMAR AI features built-in, interactive pitch decks tailored for venture capital and strategic financial partners:
+VEMAR AI features built-in, institutional investor dossiers engineered for capital markets due diligence and venture capital evaluation:
 
-- **🇮🇳 Indian Market Deck (SEBI / NSE / BSE)**
-  - **TAM**: ₹3,800 Cr addressable Indian capital markets RegTech & fraud prevention sector.
-  - **Growth**: 97M+ retail Demat accounts with high vulnerability to vernacular social pumps.
-  - **Unit Economics**: Enterprise subscriptions from ₹4.5 Lakh to ₹42 Lakh/month.
-  - **Compliance**: Native integration with SEBI CSCRF 2024 and SCORES 2.0.
+### The 4 Defensible Moats
+1. **Pre-Trade Execution Interception (<380ms SLA)**: Unlike incumbent RegTech (NICE Actimize, Nasdaq SMARTS) that analyzes trading anomalies overnight on T+1, VEMAR hooks directly into the institutional order pipeline via **FIX Protocol 4.4 Tag 35=D / Tag 39=8**, quarantining deceptive orders before exchange matching.
+2. **Cryptographic Entity Provenance (C2PA v1.3 + FIPS 140-3 Cloud KMS HSM)**: Eliminates probabilistic AI hallucination risks by binding authentic corporate disclosures and authorized trader voiceprints to tamper-proof hardware cryptographic signatures.
+3. **Dual-Sovereign Architecture (Data Localization)**: Compliant with national data sovereignty mandates—keeping Indian financial audio on-soil in **Google Cloud India (Mumbai/Delhi)** under the DPDP Act 2023, while executing US/global operations in sovereign US regions.
+4. **Court-Admissible Statutory Evidentiary Chain**: Automatically formats forensic acoustic spectrograms and packet captures into tamper-proof 7-year WORM storage dossiers aligned with Section 65B of the Indian Evidence Act / BSA 2023 and US Federal Rules of Evidence 902(11)/(14).
 
-- **🇺🇸 US Market Deck (SEC / FINRA / NYSE / NASDAQ)**
-  - **TAM**: $4.8 Billion US financial cybersecurity & market integrity market.
-  - **Threat Landscape**: $51T US equity capitalization targeted by synthetic CEO audio leaks and deepfake video manipulation during market hours.
-  - **Unit Economics**: Tier-1 institutional tiers at $12,000 – $85,000/month.
-  - **Compliance**: SEC Rule 10b-5, SEC Rule 17a-4(f) WORM, and automated Form TCR dossiers.
+### Dual-Jurisdiction Market Focus
+- **🇮🇳 Indian Capital Markets (SEBI / NSE / BSE)**:
+  - **Scale**: 165M+ Demat accounts; NSE ranks #1 globally in derivative contract turnover.
+  - **Threat Vectors**: Vernacular voice cloning targeting relationship managers, coordinated Telegram/WhatsApp pump-and-dump syndicates, and fraudulent research analyst impersonation.
+  - **Regulatory Drivers**: SEBI CSCRF 2024–2025, Mandatory Telephonic Order Recording, SEBI PFUTP Regulations 2003, and direct SEBI SCORES 2.0 integration.
+- **🇺🇸 US & Global Capital Markets (SEC / FINRA / NYSE / CME)**:
+  - **Scale**: $54T+ public equity market capitalization; 72%+ algorithmic execution turnover.
+  - **Threat Vectors**: Synthetic CEO/CFO earnings call audio, forged SEC EDGAR Form 8-K filings inducing algorithmic flash crashes, and telephonic dealer authorization spoofing.
+  - **Regulatory Drivers**: SEC Rule 10b-5, FINRA Rule 3110 (Supervisory Systems), SEC Rule 17a-4(f) WORM books and records, and automated SEC Form TCR whistleblower reporting.
 
-### Cloud Unit Economics & Gross Margins
-
-| Metric | Google Cloud Production Cost | Customer Contract | Margin Profile |
-|---|---|---|---|
-| **Per Institutional Tenant (50M Events)** | **~$657 – $702 / month** | **$15,000 / month (₹12.5L)** | **95.6% Compute Margin** |
-| **Blended Gross Margin** | Includes Pub/Sub, Vertex AI, Cloud SQL | Full Enterprise SLA | **84.6% Blended Gross Margin** |
+### Target Customer Profile (ICP)
+- **Stock Exchanges & Market Infrastructure Institutions (MIIs)**: NSE, BSE, MCX (India); NYSE, Nasdaq, CME (US).
+- **Institutional & Retail Broker-Dealers**: 450+ active trading members (India); 3,400+ FINRA registered broker-dealers (US).
+- **Asset Management Companies (AMCs) & Hedge Funds**: Guarding institutional fund manager communications and block order execution.
+- **Public Listed Corporations**: Over 5,000 corporate IR desks protecting market capitalization from forged announcements.
 
 ---
 

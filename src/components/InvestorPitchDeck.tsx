@@ -1,32 +1,25 @@
 import React, { useState } from 'react';
 import {
-  TrendingUp,
   ShieldCheck,
   Building,
-  DollarSign,
   Scale,
-  PieChart,
-  Calculator,
-  Award,
-  Download,
   Copy,
-  FileText,
   Check,
-  Globe2,
-  Users,
-  ArrowUpRight,
-  BarChart3,
-  Layers,
-  Lock,
   Briefcase,
   Target,
   Sparkles,
   Zap,
-  Clock,
   ArrowRight,
+  Cpu,
+  Lock,
+  Server,
+  FileCheck,
+  Layers,
+  Network,
+  Milestone,
+  HelpCircle,
   ExternalLink,
-  ChevronRight,
-  Cpu
+  ChevronRight
 } from 'lucide-react';
 import { VemarLogo } from './VemarLogo';
 import { Jurisdiction } from '../types';
@@ -40,7 +33,16 @@ interface InvestorPitchDeckProps {
 }
 
 type PitchDeckView = 'IN' | 'US' | 'COMPARISON';
-type SectionTab = 'executive' | 'problem' | 'solution' | 'architecture' | 'tam' | 'business_model' | 'regulatory_moat' | 'financials' | 'the_ask' | 'roi_calculator';
+type SectionTab =
+  | 'executive'
+  | 'market_crisis'
+  | 'four_moats'
+  | 'architecture'
+  | 'competitive_matrix'
+  | 'regulatory_mandates'
+  | 'target_market'
+  | 'business_model'
+  | 'the_ask';
 
 export const InvestorPitchDeck: React.FC<InvestorPitchDeckProps> = ({
   initialJurisdiction = 'IN',
@@ -48,14 +50,11 @@ export const InvestorPitchDeck: React.FC<InvestorPitchDeckProps> = ({
   onNavigateToScanner,
   onNavigateToArchitecture
 }) => {
-  const [deckView, setDeckView] = useState<PitchDeckView>(initialJurisdiction === 'US' || initialJurisdiction === 'GLOBAL' ? 'US' : 'IN');
+  const [deckView, setDeckView] = useState<PitchDeckView>(
+    initialJurisdiction === 'US' || initialJurisdiction === 'GLOBAL' ? 'US' : 'IN'
+  );
   const [activeSection, setActiveSection] = useState<SectionTab>('executive');
   const [copiedMemo, setCopiedMemo] = useState<boolean>(false);
-
-  // Dynamic ROI Calculator state
-  const [aumValue, setAumValue] = useState<number>(2500); // in millions
-  const [monthlyVolume, setMonthlyVolume] = useState<number>(100000);
-  const [entityType, setEntityType] = useState<'broker' | 'hedgefund' | 'issuer' | 'exchange'>('broker');
 
   // Sync jurisdiction changes
   const handleDeckSwitch = (view: PitchDeckView) => {
@@ -67,62 +66,43 @@ export const InvestorPitchDeck: React.FC<InvestorPitchDeckProps> = ({
     }
   };
 
-  // Unit calculations
   const isIndia = deckView === 'IN';
-  const currencySymbol = isIndia ? '₹' : '$';
-
-  // Loss mitigation calculations
-  const fraudLossAverted = isIndia
-    ? Math.round(aumValue * 0.0018 * 83.5 * 10) * 100000 // In INR
-    : Math.round(aumValue * 0.0022 * 1000000); // In USD
-
-  const regulatoryFineAvoidance = isIndia
-    ? Math.round(fraudLossAverted * 0.45)
-    : Math.round(fraudLossAverted * 0.65);
-
-  const softwareSubscriptionCost = isIndia
-    ? (entityType === 'broker' ? 6500000 : entityType === 'exchange' ? 32000000 : 1800000)
-    : (entityType === 'broker' ? 180000 : entityType === 'exchange' ? 750000 : 48000);
-
-  const totalBenefit = fraudLossAverted + regulatoryFineAvoidance;
-  const estimatedRoiMultiple = (totalBenefit / (softwareSubscriptionCost || 1)).toFixed(1);
-
-  const formatCurrency = (val: number) => {
-    if (isIndia) {
-      const cr = val / 10000000;
-      if (cr >= 1) return `₹${cr.toFixed(1)} Crores`;
-      const lakhs = val / 100000;
-      return `₹${lakhs.toFixed(1)} Lakhs`;
-    }
-    if (val >= 1000000) return `$${(val / 1000000).toFixed(2)}M`;
-    return `$${val.toLocaleString()}`;
-  };
 
   const handleCopyDealMemo = () => {
     const memo = `=====================================================
-VEMAR AI — CONFIDENTIAL INVESTOR DEAL MEMO (${isIndia ? 'INDIA CAPITAL MARKETS' : 'US & GLOBAL CAPITAL MARKETS'})
+VEMAR AI — INSTITUTIONAL VENTURE CAPITAL DEAL MEMO
+JURISDICTION FOCUS: ${isIndia ? 'INDIA CAPITAL MARKETS (SEBI / NSE / BSE)' : 'US & GLOBAL CAPITAL MARKETS (SEC / FINRA / NYSE)'}
 =====================================================
-Company: VEMAR AI (Voice, Entity & Media Authentication & Risk AI)
-Stage: Series A Institutional Round
-Target Raise: ${isIndia ? '₹65 Crores ($7.8M USD) for 15% Equity (Valuation: ₹433 Cr Post-Money)' : '$10.0M USD for 15% Equity (Valuation: $66.7M Post-Money)'}
-Lead Regulatory Regime: ${isIndia ? 'SEBI (PFUTP Regulations 2003, SCORES 2.0, MII Cyber Framework)' : 'SEC (Rule 10b-5, Securities Exchange Act 10(b), FINRA Rule 2010)'}
-Key Metrics: 99.4% Multi-Modal Detection Precision | <380ms Latency SLA | 84% Gross Margin | 138% Net Dollar Retention
+COMPANY: VEMAR AI (Voice, Entity & Media Authentication and Risk AI)
+CATEGORY: Financial Market Integrity & Pre-Trade Defense Infrastructure
+ROUND: Institutional Seed / Series A
 
-EXECUTIVE SUMMARY:
-VEMAR AI delivers the first unified, real-time defense infrastructure shielding securities markets from weaponized generative AI attacks: voice-cloned trading instructions, synthetic executive deepfakes inducing flash-crashes, and coordinated social bot swarms.
+THE THESIS:
+Generative AI has democratized weaponized capital market manipulation. Synthetic CEO voice cloning, deepfake earnings disclosures, and automated messaging swarms trigger catastrophic market losses. Incumbent RegTech operates post-trade (T+1/T+2)—by the time alerts fire, trades have settled and capital is unrecoverable. VEMAR AI is the first sovereign, low-latency defense infrastructure (<380ms SLA) that intercepts deceptive orders in the pre-trade path (FIX 4.4 Tag 35=D / Tag 39=8).
 
-FINANCIAL TRAJECTORY (5-YEAR ARR):
-${isIndia
-  ? 'Y1: ₹8.4 Cr | Y2: ₹26.5 Cr | Y3: ₹68.0 Cr | Y4: ₹132.0 Cr | Y5: ₹210.0 Cr'
-  : 'Y1: $3.4M | Y2: $11.2M | Y3: $28.5M | Y4: $49.0M | Y5: $68.5M'}
+CORE DEFENSIBLE MOATS:
+1. Pre-Trade Execution Interception (<380ms SLA vs. T+1 Post-Trade Incumbents)
+2. Cryptographic Entity Provenance (C2PA v1.3 + FIPS 140-3 Hardware Security Modules)
+3. Dual-Sovereign Architecture (DPDP India on-soil data residency & US sovereign clouds)
+4. Court-Admissible Statutory Evidentiary Chain (7-Year Immutable WORM storage)
 
-USE OF FUNDS:
-- 42% Core R&D & Low-Latency Neural Forensics (RawNet3, WavLM, FIX Gateway)
-- 30% Institutional Enterprise Distribution & Broker Integrations
-- 18% Regulatory Certifications, Legal, and Compliance
-- 10% Working Capital & Operations
+REGULATORY NON-DISCRETIONARY CATALYST:
+- India: SEBI Cybersecurity and Cyber Resilience Framework (CSCRF) 2024, Mandatory Telephonic Order Recording, SEBI PFUTP Regulations 2003, SCORES 2.0 API.
+- US & Global: SEC Rule 10b-5 (Market Manipulation), SEC Rule 17a-4(f) (Broker-Dealer WORM Books & Records), FINRA Rule 3110 (Supervisory Systems), SEC Form TCR.
 
-Contact: ir@vemar.ai | Cryptographic Verification Hash: 9f82c401e7b9932a
+TARGET CUSTOMER PROFILE (ICP):
+- Stock Exchanges & Market Infrastructure Institutions (NSE, BSE, MCX / NYSE, Nasdaq, CME)
+- Institutional & Retail Broker-Dealers (Top 450+ members in India; 3,400+ FINRA registered firms)
+- Asset Management Companies & Sovereign Wealth Funds
+- Public Listed Corporations (IR desks securing market-moving announcements)
+
+CAPITAL DEPLOYMENT PRIORITIES:
+- 45% Low-Latency Engineering (C++, CUDA, TensorRT, Exchange FIX Gateways, Colocation at BKC & Mahwah)
+- 30% Institutional Enterprise Distribution & Direct Broker Onboarding
+- 15% Regulatory Certifications, Hardware Security Audits, and Evidentiary Compliance
+- 10% Sovereign Cloud Operations & Working Capital
+
+CONTACT: ir@vemar.ai | Platform: https://vemar-ai.vercel.app
 =====================================================`;
 
     navigator.clipboard.writeText(memo);
@@ -138,14 +118,14 @@ Contact: ir@vemar.ai | Cryptographic Verification Hash: 9f82c401e7b9932a
           <div className="space-y-1.5">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>VEMAR AI Institutional Series A Investment Presentation</span>
+              <span>Institutional Venture Capital Dossier • Grounded Market Due Diligence</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
               <VemarLogo size="md" showGlow={false} />
-              <span>Dual-Market Investor Pitch Deck</span>
+              <span>VEMAR AI • Institutional Investor Pitch Deck</span>
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
-              Select between our tailored institutional presentations: the high-growth <strong className="text-emerald-300">Indian Capital Markets Deck</strong> (SEBI / NSE) and the massive scale <strong className="text-cyan-300">US & Global Wall Street Deck</strong> (SEC / FINRA), or inspect strategic comparative synergies.
+              Evaluating the pre-trade defense infrastructure protecting financial market integrity against weaponized generative AI. Inspect market-specific playbooks for <strong className="text-emerald-300">India (SEBI / NSE)</strong> and <strong className="text-cyan-300">US & Global (SEC / FINRA)</strong>, or examine the cross-border strategic moat.
             </p>
           </div>
 
@@ -161,7 +141,7 @@ Contact: ir@vemar.ai | Cryptographic Verification Hash: 9f82c401e7b9932a
               }`}
             >
               <span className="text-base">🇮🇳</span>
-              <span>India Market Deck</span>
+              <span>India Market (SEBI)</span>
             </button>
 
             <button
@@ -175,7 +155,7 @@ Contact: ir@vemar.ai | Cryptographic Verification Hash: 9f82c401e7b9932a
               }`}
             >
               <span className="text-base">🇺🇸</span>
-              <span>US & Global Deck</span>
+              <span>US & Global (SEC)</span>
             </button>
 
             <button
@@ -189,25 +169,24 @@ Contact: ir@vemar.ai | Cryptographic Verification Hash: 9f82c401e7b9932a
               }`}
             >
               <Scale className="w-3.5 h-3.5" />
-              <span>Comparative Synergy</span>
+              <span>Cross-Border Arbitrage</span>
             </button>
           </div>
         </div>
 
-        {/* Section Navigation Tabs (When on IN or US Deck) */}
+        {/* Section Navigation Tabs */}
         {deckView !== 'COMPARISON' && (
           <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none text-xs">
             {[
-              { id: 'executive', label: 'Executive Summary', icon: Briefcase },
-              { id: 'problem', label: 'Market Crisis & Gaps', icon: Target },
-              { id: 'solution', label: 'VEMAR Technology', icon: Layers },
+              { id: 'executive', label: 'Executive Thesis', icon: Briefcase },
+              { id: 'market_crisis', label: 'The AI Threat', icon: Target },
+              { id: 'four_moats', label: 'The 4 Defensible Moats', icon: ShieldCheck },
               { id: 'architecture', label: 'Technical Architecture', icon: Cpu },
-              { id: 'tam', label: 'Market Sizing (TAM)', icon: PieChart },
-              { id: 'business_model', label: 'Unit Economics & Tiers', icon: DollarSign },
-              { id: 'regulatory_moat', label: 'Regulatory Moat', icon: ShieldCheck },
-              { id: 'financials', label: '5-Year Financials', icon: BarChart3 },
-              { id: 'the_ask', label: 'Series A Capital Ask', icon: Building },
-              { id: 'roi_calculator', label: 'Interactive ROI Tool', icon: Calculator }
+              { id: 'competitive_matrix', label: 'Competitive Moat Matrix', icon: Layers },
+              { id: 'regulatory_mandates', label: 'Regulatory Mandates', icon: FileCheck },
+              { id: 'target_market', label: 'Target Customers (ICP)', icon: Building },
+              { id: 'business_model', label: 'Enterprise Commercials', icon: Server },
+              { id: 'the_ask', label: 'VC Allocation & Milestones', icon: Milestone }
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeSection === tab.id;
@@ -236,9 +215,9 @@ Contact: ir@vemar.ai | Cryptographic Verification Hash: 9f82c401e7b9932a
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs">
           <div className="flex items-center gap-2 text-slate-400">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Target Round: <strong>{isIndia ? '₹65 Cr ($7.8M) Series A' : '$10.0M Series A'}</strong></span>
+            <span>Target: <strong>Institutional Seed / Series A Round</strong></span>
             <span className="text-slate-600">•</span>
-            <span>Target VCs: <strong>{isIndia ? 'Peak XV, Elevation, Matrix India' : 'a16z, Bessemer, Founders Fund'}</strong></span>
+            <span>Focus: <strong>Capital Markets Infrastructure & Pre-Trade Risk</strong></span>
           </div>
 
           <button
@@ -249,12 +228,12 @@ Contact: ir@vemar.ai | Cryptographic Verification Hash: 9f82c401e7b9932a
             {copiedMemo ? (
               <>
                 <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-400">Deal Memo Copied!</span>
+                <span className="text-emerald-400">Deal Memo Copied to Clipboard</span>
               </>
             ) : (
               <>
                 <Copy className="w-3.5 h-3.5" />
-                <span>Copy Investor Deal Memo</span>
+                <span>Copy Institutional Deal Memo</span>
               </>
             )}
           </button>
@@ -262,65 +241,64 @@ Contact: ir@vemar.ai | Cryptographic Verification Hash: 9f82c401e7b9932a
       </div>
 
       {/* ==================================================================== */}
-      {/* 1. DECK VIEW: COMPARATIVE SYNERGY MATRIX                             */}
+      {/* 1. DECK VIEW: CROSS-BORDER STRATEGIC ARBITRAGE                       */}
       {/* ==================================================================== */}
       {deckView === 'COMPARISON' && (
         <div className="space-y-6">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Scale className="w-5 h-5 text-purple-400" />
-              <span>Cross-Border Market Arbitrage & Strategic Multiplier</span>
-            </h3>
-            <p className="text-xs text-slate-300 leading-relaxed max-w-4xl">
-              By engineering VEMAR AI to natively support both Indian (SEBI) and US (SEC/FINRA) statutory regimes from Day 1, we capture unprecedented economies of scale: training neural models on India's dense retail attack surface while harvesting ultra-high ACVs from Wall Street prime brokerages.
-            </p>
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 text-xs font-semibold">
+                <Network className="w-3.5 h-3.5" />
+                <span>Strategic Venture Thesis: Dual-Jurisdiction Market Expansion</span>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-bold text-white">
+                Why Engineering for India and the US Simultaneously Creates an Unbeatable Moat
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-4xl">
+                Most cybersecurity startups fail in financial services because they build generic tools for US enterprises that cannot navigate foreign sovereign regulations, or build localized tools in India that cannot scale to Wall Street execution speeds. VEMAR AI captures structural cross-border arbitrage: training on India's dense retail attack surface while extracting tier-1 institutional contract values from US prime brokerages.
+              </p>
+            </div>
 
             <div className="overflow-x-auto pt-2">
               <table className="w-full text-left text-xs text-slate-300">
                 <thead className="bg-slate-950 text-slate-400 uppercase tracking-wider text-[10px] font-mono border-b border-slate-800">
                   <tr>
-                    <th className="py-3 px-4">Strategic Dimension</th>
-                    <th className="py-3 px-4 text-emerald-400">🇮🇳 Indian Capital Market (SEBI)</th>
-                    <th className="py-3 px-4 text-cyan-400">🇺🇸 US & Global Capital Market (SEC)</th>
-                    <th className="py-3 px-4 text-purple-300">VEMAR Cross-Border Synergy</th>
+                    <th className="py-3 px-4">Market Pillar</th>
+                    <th className="py-3 px-4 text-emerald-400">🇮🇳 Indian Capital Market (SEBI / NSE)</th>
+                    <th className="py-3 px-4 text-cyan-400">🇺🇸 US & Global Capital Market (SEC / NYSE)</th>
+                    <th className="py-3 px-4 text-purple-300 font-bold">VEMAR Strategic Venture Advantage</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800 font-sans">
                   <tr className="hover:bg-slate-800/40">
-                    <td className="py-3 px-4 font-bold text-white">Market Size & Liquidity</td>
-                    <td className="py-3 px-4">165M+ Demat accounts, NSE #1 in global derivatives volume</td>
-                    <td className="py-3 px-4">$54 Trillion public equity market cap, 72% algorithmic volume</td>
-                    <td className="py-3 px-4 text-purple-300 font-medium">World's highest volume + world's highest dollar value</td>
+                    <td className="py-3 px-4 font-bold text-white">Market Liquidity & Scale</td>
+                    <td className="py-3 px-4">165M+ Demat accounts; NSE ranks #1 globally in derivative contract volume.</td>
+                    <td className="py-3 px-4">$54T+ public equity market capitalization; 72%+ algorithmic trade volume.</td>
+                    <td className="py-3 px-4 text-purple-300 font-medium">World's highest volume tested against world's highest dollar value.</td>
                   </tr>
                   <tr className="hover:bg-slate-800/40">
-                    <td className="py-3 px-4 font-bold text-white">Primary Threat Vector</td>
-                    <td className="py-3 px-4">Telegram pump-and-dump syndicates, vernacular voice vishing</td>
-                    <td className="py-3 px-4">Executive audio deepfakes, spoofed EDGAR 8-K flash crashes</td>
-                    <td className="py-3 px-4 text-purple-300 font-medium">Unified multi-modal neural weights cover both vectors</td>
+                    <td className="py-3 px-4 font-bold text-white">Primary Threat Surface</td>
+                    <td className="py-3 px-4">Telegram pump-and-dump syndicates, forged SEBI circulars, vernacular voice vishing.</td>
+                    <td className="py-3 px-4">Executive earnings call voice clones, spoofed SEC EDGAR 8-K filings, algorithmic flash crashes.</td>
+                    <td className="py-3 px-4 text-purple-300 font-medium">Shared neural weights shield both retail order flow and institutional block trading.</td>
                   </tr>
                   <tr className="hover:bg-slate-800/40">
-                    <td className="py-3 px-4 font-bold text-white">Regulatory Mandate</td>
-                    <td className="py-3 px-4">SEBI Master Circular 2024, PFUTP 2003, SCORES 2.0 API</td>
-                    <td className="py-3 px-4">SEC Rule 10b-5, FINRA Rule 2010/3110, Whistleblower Form TCR</td>
-                    <td className="py-3 px-4 text-purple-300 font-medium">Automated jurisdiction-switching filing dispatcher</td>
+                    <td className="py-3 px-4 font-bold text-white">Statutory Enforcement Mandate</td>
+                    <td className="py-3 px-4">SEBI CSCRF 2024, Mandatory Telephonic Order Recording, PFUTP 2003, SCORES 2.0.</td>
+                    <td className="py-3 px-4">SEC Rule 10b-5, FINRA Rule 3110 (Supervision), SEC Rule 17a-4(f) WORM, Form TCR.</td>
+                    <td className="py-3 px-4 text-purple-300 font-medium">Automated jurisdiction-switching filing dispatcher delivers instant regulatory compliance.</td>
                   </tr>
                   <tr className="hover:bg-slate-800/40">
-                    <td className="py-3 px-4 font-bold text-white">Target TAM</td>
-                    <td className="py-3 px-4 font-mono font-bold text-emerald-400">₹14,200 Cr ($1.7B USD)</td>
-                    <td className="py-3 px-4 font-mono font-bold text-cyan-400">$38.4 Billion USD</td>
-                    <td className="py-3 px-4 text-purple-300 font-medium">Total Addressable Market exceeds $40 Billion</td>
+                    <td className="py-3 px-4 font-bold text-white">Deployment & Latency Need</td>
+                    <td className="py-3 px-4">NSE BKC colocation & sovereign GCP Mumbai/Delhi zones (DPDP Act).</td>
+                    <td className="py-3 px-4">Equinix NY4 / Mahwah colocation & sovereign GCP Virginia/Frankfurt zones.</td>
+                    <td className="py-3 px-4 text-purple-300 font-medium">Standardized low-latency C++ FIX gateway deployed across major global financial hubs.</td>
                   </tr>
                   <tr className="hover:bg-slate-800/40">
-                    <td className="py-3 px-4 font-bold text-white">Typical ACV (Annual Contract)</td>
-                    <td className="py-3 px-4 font-mono">₹18 Lakhs to ₹3.2 Crores</td>
-                    <td className="py-3 px-4 font-mono">$48,000 to $750,000</td>
-                    <td className="py-3 px-4 text-purple-300 font-medium">Blended 84% gross margin across both markets</td>
-                  </tr>
-                  <tr className="hover:bg-slate-800/40">
-                    <td className="py-3 px-4 font-bold text-white">Exit Opportunities</td>
-                    <td className="py-3 px-4">Mainboard IPO on NSE / BSE, strategic buyout by Indian FinTech</td>
-                    <td className="py-3 px-4">Nasdaq Tech IPO, acquisition by Nasdaq, ICE, or CrowdStrike</td>
-                    <td className="py-3 px-4 text-purple-300 font-medium">Option for Dual-Listing or high-multiple strategic acquisition</td>
+                    <td className="py-3 px-4 font-bold text-white">Commercial Expansion Path</td>
+                    <td className="py-3 px-4">Rapid regulatory empanelment across top 450+ brokers and 44 AMCs.</td>
+                    <td className="py-3 px-4">High-ACV prime brokerage and clearing corporation enterprise contracts.</td>
+                    <td className="py-3 px-4 text-purple-300 font-medium">Diversified revenue profile insulated from single-country regulatory or macro shocks.</td>
                   </tr>
                 </tbody>
               </table>
@@ -330,55 +308,57 @@ Contact: ir@vemar.ai | Cryptographic Verification Hash: 9f82c401e7b9932a
       )}
 
       {/* ==================================================================== */}
-      {/* 2. SECTION: EXECUTIVE SUMMARY                                        */}
+      {/* 2. SECTION: EXECUTIVE SUMMARY & CORE THESIS                          */}
       {/* ==================================================================== */}
       {deckView !== 'COMPARISON' && activeSection === 'executive' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-3">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isIndia ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'}`}>
-                <Target className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-white">
-                {isIndia ? 'The ₹80,000 Cr Retail Crisis' : 'The $42B Annual Threat'}
+          {/* Core Investment Thesis Card */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+            <div className="max-w-4xl space-y-3">
+              <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
+                The Venture Capital Thesis
+              </span>
+              <h3 className="text-xl sm:text-2xl font-bold text-white leading-tight">
+                Generative AI is Weaponizing Capital Markets. Incumbent RegTech is Blind in Real-Time.
               </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                {isIndia
-                  ? 'With 165M+ Demat accounts, generative AI enables syndicated Telegram & WhatsApp operators to mass-clone advisor voices, generate fake SEBI approvals, and wipe out retail savings in coordinated pump-and-dump runs.'
-                  : 'Weaponized Generative AI has penetrated institutional capital markets: synthetic voice calls hijack high-value Fedwire transfers, deepfake CEO commentary induces flash-crashes, and LLMs automate bot market swarms.'}
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Over the past 24 months, generative AI tools have made voice cloning, video deepfakes, and automated social swarm manipulation virtually cost-free to execute. In financial markets, where billions of dollars move on telephonic dealer orders, executive earnings calls, and regulatory announcements, synthetic deception is a catastrophic threat.
               </p>
-              <div className="text-[11px] font-mono text-cyan-300 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
-                {isIndia ? '+340% YoY in Indian Finfluencer Scams (SEBI Report)' : '+310% YoY in Wall Street Deepfake Incidents (CISA/SEC)'}
-              </div>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Incumbent surveillance systems (such as NICE Actimize, Nasdaq SMARTS, and post-trade batch tools) operate on <strong className="text-white">T+1 or T+2 post-trade logs</strong>. By the time an overnight audit flags an anomalous trade, the execution is complete, margins are depleted, and investor capital has vanished.
+              </p>
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-3">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isIndia ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'}`}>
-                <ShieldCheck className="w-5 h-5" />
+            {/* 3 Core Pillars of the Investment Thesis */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
+              <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isIndia ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'}`}>
+                  <Zap className="w-5 h-5" />
+                </div>
+                <h4 className="text-sm font-bold text-white">1. Pre-Trade Execution Interception</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  VEMAR AI intercepts orders in the active transaction path via <strong className="text-slate-200">FIX 4.4 Tag 35=D</strong> in under 380 milliseconds. Orders linked to synthetic voice authorization or forged disclosures are quarantined before hitting the exchange matching engine.
+                </p>
               </div>
-              <h3 className="text-base font-bold text-white">The VEMAR Neural Moat</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Unlike passive spam filters, VEMAR AI unites <strong>sub-second multi-modal neural forensics</strong> (Acoustic RawNet3, WavLM, ResNet STT) with an <strong>immutable C2PA cryptographic provenance registry</strong> and FIX 4.4 pre-trade circuit-breakers.
-              </p>
-              <div className="text-[11px] font-mono text-emerald-300 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
-                99.4% Precision | &lt;0.06% False Positive Rate | &lt;380ms Latency
-              </div>
-            </div>
 
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-3">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isIndia ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'}`}>
-                <TrendingUp className="w-5 h-5" />
+              <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isIndia ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'}`}>
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <h4 className="text-sm font-bold text-white">2. Cryptographic Entity Provenance</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Pure statistical AI models suffer from hallucinations and false positives. VEMAR anchors multi-modal forensics in <strong className="text-slate-200">C2PA digital manifests</strong> and <strong className="text-slate-200">FIPS 140-3 Cloud KMS HSM</strong> roots of trust, providing mathematically verifiable authenticity.
+                </p>
               </div>
-              <h3 className="text-base font-bold text-white">
-                {isIndia ? 'Series A Target: ₹65 Crores' : 'Series A Target: $10.0 Million'}
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                {isIndia
-                  ? 'Seeking ₹65 Crores ($7.8M) to capture 450+ SEBI registered brokers, integrate with top 5 MIIs (NSE/BSE), and onboard 400 listed corporate IR desks across India.'
-                  : 'Seeking $10.0 Million to capture Tier 1 Wall Street prime brokerages, deploy NYSE/Nasdaq FIX gateways, and expand sales across 4,000 SEC reporting issuers.'}
-              </p>
-              <div className="text-[11px] font-mono text-indigo-300 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
-                15% Equity Dilution | Post-Money: {isIndia ? '₹433 Cr' : '$66.7M'}
+
+              <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isIndia ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'}`}>
+                  <Lock className="w-5 h-5" />
+                </div>
+                <h4 className="text-sm font-bold text-white">3. Non-Discretionary Regulatory Spend</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Surveillance is not optional software for financial institutions. Mandates like <strong className="text-slate-200">{isIndia ? 'SEBI CSCRF 2024 & Order Recording Rules' : 'SEC Rule 10b-5 & FINRA Rule 3110'}</strong> impose strict liability on brokers and exchanges to prevent and record manipulative activity.
+                </p>
               </div>
             </div>
           </div>
@@ -386,117 +366,147 @@ Contact: ir@vemar.ai | Cryptographic Verification Hash: 9f82c401e7b9932a
       )}
 
       {/* ==================================================================== */}
-      {/* 3. SECTION: MARKET CRISIS & GAPS                                     */}
+      {/* 3. SECTION: THE MARKET CRISIS & THREAT LANDSCAPE                     */}
       {/* ==================================================================== */}
-      {deckView !== 'COMPARISON' && activeSection === 'problem' && (
+      {deckView !== 'COMPARISON' && activeSection === 'market_crisis' && (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
           <div className="max-w-3xl space-y-2">
             <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
-              {isIndia ? 'Indian Regulatory & Market Landscape' : 'US Capital Markets & Threat Landscape'}
+              {isIndia ? 'Indian Capital Markets Threat Surface' : 'US & Global Capital Markets Threat Surface'}
             </span>
             <h3 className="text-xl font-bold text-white">
               {isIndia
-                ? 'Why Indian Capital Markets Face an Existential Deepfake Threat'
-                : 'Why Wall Street Trading Desks Are Defenseless Against Real-Time AI Exploits'}
+                ? 'The Generative AI Epidemic Targeting Indian Retail & Broker Desks'
+                : 'Algorithmic Vulnerability & Voice Cloning on Institutional Trading Desks'}
             </h3>
             <p className="text-xs text-slate-300 leading-relaxed">
               {isIndia
-                ? 'India has witnessed the fastest retail investment expansion in financial history. Over 165 Million Demat accounts exist today. But this rapid democratization is colliding directly with generative AI fraud.'
-                : 'High-frequency algorithmic trading represents 72% of US equity turnover. Algorithms ingest news and audio in milliseconds. A synthetic audio clip or forged SEC 8-K can trigger automatic billions in panic liquidation before humans even notice.'}
+                ? 'India has experienced the fastest retail investment expansion in financial history, with Demat accounts expanding to over 165 Million. However, this vast retail liquidity is directly exposed to organized syndicates using generative AI to deceive investors, impersonate registered intermediaries, and bypass dealer security.'
+                : 'In US equity markets, where over 72% of daily volume is algorithmic and high-frequency, trading algorithms ingest breaking audio and news feeds in microseconds. A single synthetic audio leak or forged SEC 8-K disclosure can trigger cascading automated flash crashes before compliance officers can react.'}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-              <div className="font-bold text-white flex items-center gap-2">
-                <Target className="w-4 h-4 text-red-400" />
-                <span>{isIndia ? 'Vernacular Call Center Voice Vishing' : 'Prime Broker Wire & ACH Diversion'}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+            <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="font-bold text-white text-sm flex items-center gap-2">
+                <Target className="w-4 h-4 text-rose-400" />
+                <span>{isIndia ? 'Vernacular Voice Vishing & Relationship Manager Spoofing' : 'Institutional Telephonic Wire & Dealer Authorization Spoofing'}</span>
               </div>
-              <p className="text-slate-400 leading-relaxed">
+              <p className="text-slate-300 leading-relaxed">
                 {isIndia
-                  ? 'Attackers clone the voices of relationship managers in Hindi, Gujarati, and Tamil to call high-net-worth clients and authorized dealers, redirecting margin funds to offshore mule accounts.'
-                  : 'Sophisticated audio cloning duplicates senior hedge fund managers calling prime brokerage settlement desks to divert multi-million dollar cash transfers under the guise of margin requirements.'}
+                  ? 'Attackers harvest publicly available audio of stock brokers, branch managers, and SEBI-registered analysts to clone their voices in Hindi, Gujarati, Marathi, and Tamil. They call high-net-worth clients and dealing desks, issuing fraudulent buy orders or directing funds to mule accounts.'
+                  : 'Sophisticated syndicates clone voices of hedge fund managing partners and authorized corporate treasurers, calling prime broker settlement desks to approve margin releases or high-value Fedwire transfers under urgent pre-market conditions.'}
               </p>
+              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-mono text-[11px]">
+                {isIndia ? 'Vulnerability: SEBI mandatory telephonic order recording requires proof of genuine voice authorization.' : 'Vulnerability: FINRA Rule 3110 mandates supervisory procedures to prevent unauthorized trading.'}
+              </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-              <div className="font-bold text-white flex items-center gap-2">
-                <Target className="w-4 h-4 text-red-400" />
-                <span>{isIndia ? 'Telegram / WhatsApp Syndicate Swarms' : 'Flash-Crash Deepfakes & Bot Swarms'}</span>
+            <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="font-bold text-white text-sm flex items-center gap-2">
+                <Target className="w-4 h-4 text-rose-400" />
+                <span>{isIndia ? 'Telegram & WhatsApp Syndicate Pump-and-Dump Swarms' : 'Synthetic Press Releases & Algorithmic Flash Crashes'}</span>
               </div>
-              <p className="text-slate-400 leading-relaxed">
+              <p className="text-slate-300 leading-relaxed">
                 {isIndia
-                  ? 'Coordinated bot swarms flood social channels with fake SEBI registration certificates and fabricated stock recommendations, creating artificial upper-circuit price movements.'
-                  : 'Autonomous LLM swarms deploy synthetic screenshots, fake insider whistleblowing memos, and deepfake video clips to orchestrate gamma squeezes and panic sell-offs.'}
+                  ? 'Syndicates create hundreds of automated messaging groups dispensing fake tips, fabricated SEBI registration certificates, and AI-generated video deepfakes of prominent fund managers. They coordinate retail buying into illiquid penny stocks to trigger upper circuits before dumping.'
+                  : 'Attackers generate forged SEC EDGAR Form 8-K filings and deepfake CEO commentary regarding fictitious acquisitions or sudden FDA rejections. Algorithmic news scrapers immediately trade on these falsified signals, causing multi-billion dollar price swings.'}
               </p>
+              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-mono text-[11px]">
+                {isIndia ? 'Vulnerability: SEBI PFUTP regulations hold intermediaries accountable for facilitating deceptive trade volume.' : 'Vulnerability: SEC Rule 10b-5 strictly prohibits deceptive devices and material misstatements affecting share prices.'}
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {/* ==================================================================== */}
-      {/* 4. SECTION: VEMAR TECHNOLOGY & NEURAL PIPELINE                       */}
+      {/* 4. SECTION: THE 4 DEFENSIBLE MOATS (WHY VEMAR WINS)                  */}
       {/* ==================================================================== */}
-      {deckView !== 'COMPARISON' && activeSection === 'solution' && (
-        <div className="space-y-6">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
-              <div>
-                <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
-                  Proprietary Technological Architecture
+      {deckView !== 'COMPARISON' && activeSection === 'four_moats' && (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+          <div className="max-w-3xl space-y-2">
+            <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
+              Defensible Competitive Moats
+            </span>
+            <h3 className="text-xl font-bold text-white">
+              The 4 Architectural Barriers That Make VEMAR AI Indispensable
+            </h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Venture capital investors evaluate sustainable competitive advantages. VEMAR is not another generic LLM wrapper or consumer deepfake checker. We have engineered four structural barriers that prevent displacement by incumbents or commoditization.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+            {/* Moat 1 */}
+            <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="flex items-center gap-2.5">
+                <span className="w-7 h-7 rounded-lg bg-cyan-500/10 text-cyan-400 font-mono font-bold flex items-center justify-center text-xs">
+                  01
                 </span>
-                <h3 className="text-xl font-bold text-white mt-1">The VEMAR 5-Stage Neural Defense Matrix</h3>
+                <h4 className="font-bold text-white text-sm">Pre-Trade Execution Interception (&lt;380ms SLA)</h4>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveSection('architecture')}
-                  className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold font-sans flex items-center gap-1.5 transition-all shadow-md"
-                >
-                  <Cpu className="w-3.5 h-3.5" />
-                  <span>Interactive Architecture Diagram</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={onNavigateToArchitecture}
-                  className="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold font-sans flex items-center gap-1.5 transition-all shadow-md"
-                >
-                  <span>Launch Full Studio</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+              <p className="text-slate-300 leading-relaxed">
+                Incumbent surveillance tools analyze trades overnight on T+1. VEMAR hooks directly into the institutional order pipeline via <strong>FIX Protocol 4.4</strong>. When an unauthorized voice or deceptive news trigger is detected, VEMAR issues a <strong>Tag 35=D quarantine</strong> or <strong>Tag 39=8 rejection</strong> before the exchange matching engine executes the transaction.
+              </p>
+              <div className="text-[11px] text-emerald-400 font-mono bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                Moat Factor: High integration switching cost; embedded in broker OMS / EMS gateways.
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-              {[
-                { letter: 'V', title: 'Voice Biometrics', tech: 'RawNet3 + WavLM', stat: '42ms SLA' },
-                { letter: 'E', title: 'Entity Provenance', tech: 'C2PA + SHA-256 PKI', stat: '100% Deterministic' },
-                { letter: 'M', title: 'Media Forensics', tech: 'ResNet STT + Viseme Flow', stat: '99.4% F1-Score' },
-                { letter: 'A', title: 'Algorithmic Radar', tech: 'Graph Neural Networks', stat: '1,200+ Channels' },
-                { letter: 'R', title: 'Response & Halts', tech: 'FIX 4.4 Tag 35=D Gateways', stat: '<16ms Execution' }
-              ].map((node) => (
-                <div key={node.letter} className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-center sm:text-left">
-                  <span className="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 font-mono font-black text-base flex items-center justify-center mx-auto sm:mx-0">
-                    {node.letter}
-                  </span>
-                  <div className="font-bold text-white text-xs">{node.title}</div>
-                  <div className="text-[11px] text-slate-400 font-mono">{node.tech}</div>
-                  <div className="text-[10px] text-emerald-400 font-mono pt-1 font-semibold">{node.stat}</div>
-                </div>
-              ))}
+            {/* Moat 2 */}
+            <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="flex items-center gap-2.5">
+                <span className="w-7 h-7 rounded-lg bg-cyan-500/10 text-cyan-400 font-mono font-bold flex items-center justify-center text-xs">
+                  02
+                </span>
+                <h4 className="font-bold text-white text-sm">Cryptographic Entity Provenance (C2PA + Cloud KMS HSM)</h4>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Generic AI detectors rely purely on probability, resulting in false alarms that halt legitimate business. VEMAR anchors identity in deterministic <strong>C2PA Manifest v1.3</strong> standards signed via <strong>FIPS 140-3 Level 3 Hardware Security Modules</strong>. Registered corporate issuers and authorized traders possess unforgeable digital signatures.
+              </p>
+              <div className="text-[11px] text-emerald-400 font-mono bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                Moat Factor: Network effect — as more issuers and brokers enroll keys, registry value compounds.
+              </div>
+            </div>
+
+            {/* Moat 3 */}
+            <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="flex items-center gap-2.5">
+                <span className="w-7 h-7 rounded-lg bg-cyan-500/10 text-cyan-400 font-mono font-bold flex items-center justify-center text-xs">
+                  03
+                </span>
+                <h4 className="font-bold text-white text-sm">Dual-Sovereign Infrastructure (Data Localization)</h4>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Financial regulators strictly forbid sending domestic trading audio and order books to offshore cloud endpoints. VEMAR operates sovereign infrastructure: Indian telephonic audio and broker orders remain on-soil in <strong>GCP Mumbai/Delhi</strong> (complying with the DPDP Act 2023), while US/global operations execute in US sovereign zones.
+              </p>
+              <div className="text-[11px] text-emerald-400 font-mono bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                Moat Factor: Foreign AI vendors cannot legally handle domestic banking/brokerage audio without sovereign infrastructure.
+              </div>
+            </div>
+
+            {/* Moat 4 */}
+            <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="flex items-center gap-2.5">
+                <span className="w-7 h-7 rounded-lg bg-cyan-500/10 text-cyan-400 font-mono font-bold flex items-center justify-center text-xs">
+                  04
+                </span>
+                <h4 className="font-bold text-white text-sm">Court-Admissible Statutory Evidentiary Chain</h4>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                When an order is halted or an incident is reported, compliance teams require legally valid evidence. VEMAR packages audio spectrograms, network packet captures, and hash trees onto <strong>7-year immutable WORM storage</strong>, formatted to meet Section 65B of the Indian Evidence Act / BSA 2023 and US Federal Rules of Evidence 902(11)/(14).
+              </p>
+              <div className="text-[11px] text-emerald-400 font-mono bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                Moat Factor: Direct integration into regulatory reporting portals (SEBI SCORES 2.0 & SEC Form TCR).
+              </div>
             </div>
           </div>
-
-          {/* Embedded Architecture Diagram inside Solution tab */}
-          <TechnicalArchitectureDiagram
-            jurisdiction={isIndia ? 'IN' : 'GLOBAL'}
-            onSelectJurisdiction={onSelectJurisdiction}
-          />
         </div>
       )}
 
       {/* ==================================================================== */}
-      {/* 4B. DEDICATED SECTION: TECHNICAL ARCHITECTURE & TOPOLOGY             */}
+      {/* 5. SECTION: TECHNICAL ARCHITECTURE                                   */}
       {/* ==================================================================== */}
       {deckView !== 'COMPARISON' && activeSection === 'architecture' && (
         <div className="space-y-6">
@@ -508,281 +518,75 @@ Contact: ir@vemar.ai | Cryptographic Verification Hash: 9f82c401e7b9932a
       )}
 
       {/* ==================================================================== */}
-      {/* 5. SECTION: MARKET SIZING (TAM / SAM / SOM)                          */}
+      {/* 6. SECTION: COMPETITIVE MOAT MATRIX (VEMAR VS. INCUMBENTS)           */}
       {/* ==================================================================== */}
-      {deckView !== 'COMPARISON' && activeSection === 'tam' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-12 bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
-                  Addressable Market Opportunity
-                </span>
-                <h3 className="text-xl font-bold text-white mt-1">
-                  {isIndia ? 'Indian Capital Markets TAM / SAM / SOM' : 'US & Global Capital Markets TAM / SAM / SOM'}
-                </h3>
-              </div>
-              <span className="text-xs font-mono text-slate-400 bg-slate-950 px-3 py-1 rounded-lg border border-slate-800">
-                BCG / Gartner / SEBI Sizing Models (2024–2028)
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* TAM */}
-              <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                <span className="text-xs font-bold text-slate-400 block uppercase font-mono">Total Addressable (TAM)</span>
-                <div className="text-2xl sm:text-3xl font-black text-cyan-400 font-mono">
-                  {isIndia ? '₹14,200 Cr' : '$38.4 Billion'}
-                </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  {isIndia
-                    ? 'Total Indian BFSI cybersecurity, automated market surveillance, and AI deepfake defense spending by 2028.'
-                    : 'Global capital markets cyber defense, deepfake fraud prevention, and regulatory automated surveillance spending projected by 2028.'}
-                </p>
-              </div>
-
-              {/* SAM */}
-              <div className="p-5 rounded-xl bg-slate-950 border border-cyan-500/30 space-y-2">
-                <span className="text-xs font-bold text-slate-400 block uppercase font-mono">Serviceable Addressable (SAM)</span>
-                <div className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">
-                  {isIndia ? '₹4,800 Cr' : '$9.2 Billion'}
-                </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  {isIndia
-                    ? 'Direct spend across 450+ SEBI registered brokers, 5 MIIs, 44 AMCs, and 1,800+ NSE/BSE listed corporate IR desks.'
-                    : '3,400+ FINRA registered broker-dealers, clearing corporations, asset managers, and recognized US exchanges.'}
-                </p>
-              </div>
-
-              {/* SOM */}
-              <div className="p-5 rounded-xl bg-gradient-to-br from-cyan-950/40 to-slate-950 border border-cyan-500/50 space-y-2">
-                <span className="text-xs font-bold text-white block uppercase font-mono">Serviceable Obtainable (SOM)</span>
-                <div className="text-2xl sm:text-3xl font-black text-white font-mono">
-                  {isIndia ? '₹520 Cr' : '$740 Million'}
-                </div>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  {isIndia
-                    ? 'Capturing 35% of institutional brokerages, top 3 exchanges, and 400 listed corporate IR desks within 36 months.'
-                    : 'Capturing 450 institutional brokerages, top 5 MIIs, and 1,200 listed corporate investor relations desks in 36 months.'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ==================================================================== */}
-      {/* 6. SECTION: BUSINESS MODEL & UNIT ECONOMICS                          */}
-      {/* ==================================================================== */}
-      {deckView !== 'COMPARISON' && activeSection === 'business_model' && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
-            <div>
-              <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
-                B2B Enterprise SaaS Architecture
-              </span>
-              <h3 className="text-xl font-bold text-white mt-1">Monetization Tiers & Unit Economics</h3>
-            </div>
-            <div className="text-xs font-mono text-emerald-400 bg-emerald-950 px-3 py-1 rounded-lg border border-emerald-800">
-              {isIndia ? '82% Gross Margin' : '86% Gross Margin'}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center space-y-1">
-              <span className="text-slate-400 text-xs">Net Dollar Retention</span>
-              <span className="text-2xl font-bold text-white font-mono block">{isIndia ? '134%' : '142%'}</span>
-              <span className="text-[10px] text-slate-500">Contract Expansion</span>
-            </div>
-
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center space-y-1">
-              <span className="text-slate-400 text-xs">CAC Payback Period</span>
-              <span className="text-2xl font-bold text-white font-mono block">{isIndia ? '6.8 Months' : '5.2 Months'}</span>
-              <span className="text-[10px] text-slate-500">Direct Institutional Sales</span>
-            </div>
-
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center space-y-1">
-              <span className="text-slate-400 text-xs">LTV / CAC Ratio</span>
-              <span className="text-2xl font-bold text-emerald-400 font-mono block">{isIndia ? '5.4x' : '6.2x'}</span>
-              <span className="text-[10px] text-slate-500">Top-Decile Enterprise</span>
-            </div>
-          </div>
-
-          {/* Pricing Tiers Table */}
-          <div className="space-y-3 pt-2 text-xs">
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <span className="font-bold text-white text-sm block">Tier 1: Listed Issuer IR Provenance Seal</span>
-                <span className="text-slate-400">Cryptographic press release signing, tamper badge & public QR ledger</span>
-              </div>
-              <div className="font-mono font-bold text-cyan-300 text-sm">
-                {isIndia ? '₹18 Lakhs / year ($22k USD)' : '$48,000 / year'}
-              </div>
-            </div>
-
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <span className="font-bold text-white text-sm block">Tier 2: Institutional Broker Voice & Phishing Firewall</span>
-                <span className="text-slate-400">Sub-second telephonic biometric call check + inbound email proxy</span>
-              </div>
-              <div className="font-mono font-bold text-cyan-300 text-sm">
-                {isIndia ? '₹65 Lakhs / yr + ₹0.15 / call' : '$180,000 / yr + $0.02 / call'}
-              </div>
-            </div>
-
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <span className="font-bold text-white text-sm block">Tier 3: Exchange & MII Real-Time Surveillance Grid</span>
-                <span className="text-slate-400">Full market crawlers, social botnet radar, and automated SCORES/SEC filing</span>
-              </div>
-              <div className="font-mono font-bold text-cyan-300 text-sm">
-                {isIndia ? '₹3.2 Crores / year ($385k USD)' : '$750,000 / year'}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ==================================================================== */}
-      {/* 7. SECTION: REGULATORY MOAT & COMPLIANCE                             */}
-      {/* ==================================================================== */}
-      {deckView !== 'COMPARISON' && activeSection === 'regulatory_moat' && (
+      {deckView !== 'COMPARISON' && activeSection === 'competitive_matrix' && (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
           <div className="max-w-3xl space-y-2">
             <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
-              Unfair Regulatory Advantage
+              Landscape & Differentiation
             </span>
             <h3 className="text-xl font-bold text-white">
-              {isIndia ? 'Statutory Alignment with SEBI & MII Mandates' : 'Statutory Alignment with SEC & FINRA Rules'}
+              Why Incumbents Cannot Solve This Problem
             </h3>
             <p className="text-xs text-slate-300 leading-relaxed">
-              {isIndia
-                ? 'VEMAR AI is designed to integrate directly with Indian regulatory workflows, transforming compliance obligations into automated, recurring SaaS contracts.'
-                : 'US federal securities statutes impose strict supervisory duties on broker-dealers. VEMAR AI automates statutory compliance, mitigating multi-million dollar regulatory penalties.'}
+              Financial institutions already pay millions for compliance software, yet they remain completely exposed to generative AI manipulation. Here is how VEMAR AI stands fundamentally apart from legacy vendors.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-            {isIndia ? (
-              <>
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                  <div className="font-bold text-emerald-400 font-mono">SEBI PFUTP Reg 4(2)(k)</div>
-                  <p className="text-slate-300 leading-relaxed">
-                    Automates detection of deceptive synthetic dissemination influencing securities pricing, fulfilling mandatory intermediary surveillance obligations.
-                  </p>
-                </div>
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                  <div className="font-bold text-emerald-400 font-mono">SEBI Master Circular (June 2024)</div>
-                  <p className="text-slate-300 leading-relaxed">
-                    Enforces strict verification preventing brokers from associating with unregistered Finfluencer entities dispensing stock advice.
-                  </p>
-                </div>
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                  <div className="font-bold text-emerald-400 font-mono">SCORES 2.0 API Direct Gateway</div>
-                  <p className="text-slate-300 leading-relaxed">
-                    Auto-packages forensic evidence into certified electronic dossiers ready for immediate dispatch to SEBI enforcement portals.
-                  </p>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                  <div className="font-bold text-cyan-400 font-mono">SEC Rule 10b-5</div>
-                  <p className="text-slate-300 leading-relaxed">
-                    Sub-second detection of manipulative devices, fraudulent press releases, and deceptive tender offers in interstate commerce.
-                  </p>
-                </div>
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                  <div className="font-bold text-cyan-400 font-mono">FINRA Rule 3110 (Supervision)</div>
-                  <p className="text-slate-300 leading-relaxed">
-                    Establishes supervisory procedures to detect synthetic telephonic trading instructions before execution, preventing customer account takeovers.
-                  </p>
-                </div>
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                  <div className="font-bold text-cyan-400 font-mono">SEC Form TCR Whistleblower</div>
-                  <p className="text-slate-300 leading-relaxed">
-                    Automates electronic generation of certified Tips, Complaints, and Referrals (TCR) with cryptographic hash chains.
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ==================================================================== */}
-      {/* 8. SECTION: 5-YEAR FINANCIAL PROJECTIONS                             */}
-      {/* ==================================================================== */}
-      {deckView !== 'COMPARISON' && activeSection === 'financials' && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
-            <div>
-              <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
-                Financial Trajectory
-              </span>
-              <h3 className="text-xl font-bold text-white mt-1">
-                5-Year Annual Recurring Revenue (ARR) & Margin Plan
-              </h3>
-            </div>
-            <div className="text-xs font-mono text-emerald-400 bg-emerald-950 px-3 py-1 rounded-lg border border-emerald-800">
-              EBITDA Positive by Month 18
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto pt-2">
             <table className="w-full text-left text-xs text-slate-300">
               <thead className="bg-slate-950 text-slate-400 uppercase tracking-wider text-[10px] font-mono border-b border-slate-800">
                 <tr>
-                  <th className="py-3 px-3">Metric</th>
-                  <th className="py-3 px-3 text-right">Year 1</th>
-                  <th className="py-3 px-3 text-right">Year 2</th>
-                  <th className="py-3 px-3 text-right">Year 3</th>
-                  <th className="py-3 px-3 text-right">Year 4</th>
-                  <th className="py-3 px-3 text-right text-emerald-400">Year 5</th>
+                  <th className="py-3 px-4">Evaluation Dimension</th>
+                  <th className="py-3 px-4 text-cyan-400 font-bold">VEMAR AI (Pre-Trade Defense)</th>
+                  <th className="py-3 px-4 text-slate-400">Legacy RegTech (NICE, SMARTS)</th>
+                  <th className="py-3 px-4 text-slate-400">Generic Deepfake Checkers</th>
+                  <th className="py-3 px-4 text-slate-400">In-House Broker Scripts</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 font-mono">
+              <tbody className="divide-y divide-slate-800 font-sans">
                 <tr className="hover:bg-slate-800/40">
-                  <td className="py-3 px-3 font-semibold text-white font-sans">Ending ARR</td>
-                  <td className="py-3 px-3 text-right font-bold text-white">
-                    {isIndia ? '₹8.4 Cr' : '$3.4M'}
-                  </td>
-                  <td className="py-3 px-3 text-right font-bold text-white">
-                    {isIndia ? '₹26.5 Cr' : '$11.2M'}
-                  </td>
-                  <td className="py-3 px-3 text-right font-bold text-white">
-                    {isIndia ? '₹68.0 Cr' : '$28.5M'}
-                  </td>
-                  <td className="py-3 px-3 text-right font-bold text-white">
-                    {isIndia ? '₹132.0 Cr' : '$49.0M'}
-                  </td>
-                  <td className="py-3 px-3 text-right font-black text-emerald-400 text-sm">
-                    {isIndia ? '₹210.0 Cr' : '$68.5M'}
-                  </td>
+                  <td className="py-3 px-4 font-bold text-white">Execution Timing</td>
+                  <td className="py-3 px-4 text-emerald-400 font-bold">In-Line Pre-Trade (&lt;380ms SLA)</td>
+                  <td className="py-3 px-4 text-rose-400">Post-Trade Batch (T+1 or T+2)</td>
+                  <td className="py-3 px-4 text-rose-400">Offline Manual Upload (Minutes)</td>
+                  <td className="py-3 px-4 text-slate-400">Post-Execution Logging</td>
                 </tr>
                 <tr className="hover:bg-slate-800/40">
-                  <td className="py-3 px-3 text-slate-400 font-sans">Enterprise Accounts</td>
-                  <td className="py-3 px-3 text-right">18</td>
-                  <td className="py-3 px-3 text-right">64</td>
-                  <td className="py-3 px-3 text-right">145</td>
-                  <td className="py-3 px-3 text-right">290</td>
-                  <td className="py-3 px-3 text-right text-white font-bold">480</td>
+                  <td className="py-3 px-4 font-bold text-white">Financial Protocol Integration</td>
+                  <td className="py-3 px-4 text-emerald-400 font-bold">Native FIX 4.4 Tag 35=D & SIP VoIP</td>
+                  <td className="py-3 px-4 text-slate-300">Database SQL connectors only</td>
+                  <td className="py-3 px-4 text-rose-400">No trading protocol support</td>
+                  <td className="py-3 px-4 text-slate-400">Custom brittle point-to-point scripts</td>
                 </tr>
                 <tr className="hover:bg-slate-800/40">
-                  <td className="py-3 px-3 text-slate-400 font-sans">Gross Margin %</td>
-                  <td className="py-3 px-3 text-right">78%</td>
-                  <td className="py-3 px-3 text-right">82%</td>
-                  <td className="py-3 px-3 text-right">84%</td>
-                  <td className="py-3 px-3 text-right">85%</td>
-                  <td className="py-3 px-3 text-right text-cyan-300 font-bold">86%</td>
+                  <td className="py-3 px-4 font-bold text-white">Voice Clone & Biometric Defense</td>
+                  <td className="py-3 px-4 text-emerald-400 font-bold">RawNet3 + WavLM Vocoder Jitter</td>
+                  <td className="py-3 px-4 text-rose-400">Basic keyword search only</td>
+                  <td className="py-3 px-4 text-slate-300">Consumer audio model only</td>
+                  <td className="py-3 px-4 text-rose-400">None (Caller ID based only)</td>
                 </tr>
                 <tr className="hover:bg-slate-800/40">
-                  <td className="py-3 px-3 text-slate-400 font-sans">EBITDA %</td>
-                  <td className="py-3 px-3 text-right text-red-400">-32%</td>
-                  <td className="py-3 px-3 text-right text-emerald-400">+8%</td>
-                  <td className="py-3 px-3 text-right text-emerald-400">+22%</td>
-                  <td className="py-3 px-3 text-right text-emerald-400">+31%</td>
-                  <td className="py-3 px-3 text-right text-emerald-400 font-bold">+38%</td>
+                  <td className="py-3 px-4 font-bold text-white">Cryptographic Provenance</td>
+                  <td className="py-3 px-4 text-emerald-400 font-bold">C2PA v1.3 + FIPS 140-3 Cloud KMS HSM</td>
+                  <td className="py-3 px-4 text-rose-400">None</td>
+                  <td className="py-3 px-4 text-rose-400">None (Probabilistic only)</td>
+                  <td className="py-3 px-4 text-rose-400">None</td>
+                </tr>
+                <tr className="hover:bg-slate-800/40">
+                  <td className="py-3 px-4 font-bold text-white">Regulatory Evidentiary Output</td>
+                  <td className="py-3 px-4 text-emerald-400 font-bold">SEBI SCORES 2.0 & SEC Form TCR</td>
+                  <td className="py-3 px-4 text-slate-300">Internal PDF compliance summaries</td>
+                  <td className="py-3 px-4 text-rose-400">Generic JSON confidence score</td>
+                  <td className="py-3 px-4 text-rose-400">Raw server logs</td>
+                </tr>
+                <tr className="hover:bg-slate-800/40">
+                  <td className="py-3 px-4 font-bold text-white">Data Sovereignty & On-Soil Laws</td>
+                  <td className="py-3 px-4 text-emerald-400 font-bold">GCP India (DPDP Act) & US Sovereign</td>
+                  <td className="py-3 px-4 text-slate-300">Legacy on-prem or US multi-tenant</td>
+                  <td className="py-3 px-4 text-rose-400">Public cloud multi-tenant (Non-compliant)</td>
+                  <td className="py-3 px-4 text-slate-300">Local datacenter</td>
                 </tr>
               </tbody>
             </table>
@@ -791,85 +595,197 @@ Contact: ir@vemar.ai | Cryptographic Verification Hash: 9f82c401e7b9932a
       )}
 
       {/* ==================================================================== */}
-      {/* 9. SECTION: SERIES A CAPITAL ASK & CAP TABLE                         */}
+      {/* 7. SECTION: REGULATORY MANDATES & COMPLIANCE DRIVERS                 */}
       {/* ==================================================================== */}
-      {deckView !== 'COMPARISON' && activeSection === 'the_ask' && (
+      {deckView !== 'COMPARISON' && activeSection === 'regulatory_mandates' && (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
-            <div>
-              <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
-                Financing Plan
-              </span>
-              <h3 className="text-xl font-bold text-white mt-1">
-                {isIndia ? 'Series A Offering: ₹65 Crores ($7.8M USD)' : 'Series A Offering: $10.0 Million USD'}
-              </h3>
-            </div>
-            <div className="text-xs font-mono text-cyan-300 bg-cyan-950 px-3 py-1 rounded-lg border border-cyan-800">
-              15% Target Equity Dilution
-            </div>
+          <div className="max-w-3xl space-y-2">
+            <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
+              The Non-Negotiable Regulatory Catalyst
+            </span>
+            <h3 className="text-xl font-bold text-white">
+              {isIndia
+                ? 'SEBI Mandates Driving Compulsory Adoption Across Indian Intermediaries'
+                : 'SEC & FINRA Supervisory Rules Requiring Institutional Deception Controls'}
+            </h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              {isIndia
+                ? 'In India, SEBI has enacted strict statutory frameworks establishing personal and organizational liability for stock brokers and market infrastructure institutions that fail to implement resilient cyber defenses and prevent deceptive trading practices.'
+                : 'In the United States, federal securities statutes require broker-dealers and registered investment advisers to maintain robust supervisory control systems capable of preventing deceptive devices and preserving immutable trading records.'}
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-6 space-y-4">
-              <h4 className="text-xs uppercase font-mono tracking-wider text-slate-400 font-bold">
-                Cap Table Post-Money Structure
-              </h4>
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-950 border border-slate-800">
-                  <span className="font-semibold text-white">Founders & Management</span>
-                  <span className="font-mono text-cyan-300 font-bold">65.0%</span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs">
+            {isIndia ? (
+              <>
+                <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div className="font-mono font-bold text-emerald-400 text-sm">
+                    SEBI CSCRF (2024–2025)
+                  </div>
+                  <h4 className="font-bold text-white">Cybersecurity & Cyber Resilience Framework</h4>
+                  <p className="text-slate-300 leading-relaxed">
+                    Mandates that Qualified Intermediaries (QIs) and Market Infrastructure Institutions (MIIs) maintain real-time telemetry, automated incident triage, and API surveillance against emerging AI-driven cyber threats.
+                  </p>
+                  <div className="text-[11px] text-slate-500 font-mono pt-1">
+                    Applicable to: All active stock brokers, depositories, and exchanges.
+                  </div>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-950 border border-slate-800">
-                  <span className="font-semibold text-white">Series A Lead Investors</span>
-                  <span className="font-mono text-emerald-400 font-bold">15.0%</span>
+
+                <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div className="font-mono font-bold text-emerald-400 text-sm">
+                    SEBI Mandatory Order Recording
+                  </div>
+                  <h4 className="font-bold text-white">Telephonic Order Verification Mandate</h4>
+                  <p className="text-slate-300 leading-relaxed">
+                    Brokers are legally required to record and authenticate all telephonic client trading instructions. VEMAR provides the biometric verification layer ensuring the voice on the recorded call is authentic.
+                  </p>
+                  <div className="text-[11px] text-slate-500 font-mono pt-1">
+                    Prevents: Relationship manager fraud and voice-vishing account diversion.
+                  </div>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-950 border border-slate-800">
-                  <span className="font-semibold text-white">Seed Investors & Angels</span>
-                  <span className="font-mono text-slate-300 font-bold">10.0%</span>
+
+                <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div className="font-mono font-bold text-emerald-400 text-sm">
+                    SEBI PFUTP Regulations (2003)
+                  </div>
+                  <h4 className="font-bold text-white">Prohibition of Fraudulent Trade Practices</h4>
+                  <p className="text-slate-300 leading-relaxed">
+                    Prohibits the dissemination of manipulative information designed to artificially inflate or depress stock prices. VEMAR monitors social syndicates and automatically packages evidence for SEBI SCORES 2.0.
+                  </p>
+                  <div className="text-[11px] text-slate-500 font-mono pt-1">
+                    Integration: Direct REST dispatch to SEBI enforcement portals.
+                  </div>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-950 border border-slate-800">
-                  <span className="font-semibold text-white">Employee Stock Option Pool (ESOP)</span>
-                  <span className="font-mono text-slate-300 font-bold">10.0%</span>
+              </>
+            ) : (
+              <>
+                <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div className="font-mono font-bold text-cyan-400 text-sm">
+                    SEC Rule 10b-5
+                  </div>
+                  <h4 className="font-bold text-white">Employment of Manipulative & Deceptive Devices</h4>
+                  <p className="text-slate-300 leading-relaxed">
+                    Prohibits making untrue statements of material fact or using deceptive devices in connection with the purchase or sale of any security. VEMAR intercepts synthetic CEO commentary and fake press releases.
+                  </p>
+                  <div className="text-[11px] text-slate-500 font-mono pt-1">
+                    Applicable to: Public issuers, hedge funds, and algorithmic trading desks.
+                  </div>
                 </div>
+
+                <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div className="font-mono font-bold text-cyan-400 text-sm">
+                    FINRA Rule 3110 (Supervision)
+                  </div>
+                  <h4 className="font-bold text-white">Supervisory Systems & Account Takeover Prevention</h4>
+                  <p className="text-slate-300 leading-relaxed">
+                    Requires broker-dealers to establish and maintain a supervisory system reasonably designed to achieve compliance. VEMAR prevents synthetic voice authorization of wire transfers and unauthorized trades.
+                  </p>
+                  <div className="text-[11px] text-slate-500 font-mono pt-1">
+                    Applicable to: All 3,400+ FINRA registered broker-dealers.
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div className="font-mono font-bold text-cyan-400 text-sm">
+                    SEC Rule 17a-4(f) (WORM)
+                  </div>
+                  <h4 className="font-bold text-white">Electronic Broker-Dealer Books & Records</h4>
+                  <p className="text-slate-300 leading-relaxed">
+                    Mandates write-once-read-many (WORM) storage for electronic trading records and communications. VEMAR anchors all forensic incident dossiers in tamper-proof Google Cloud Storage with 7-year retention locks.
+                  </p>
+                  <div className="text-[11px] text-slate-500 font-mono pt-1">
+                    Compliance: Legally certified digital chain of custody.
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* 8. SECTION: TARGET MARKET & IDEAL CUSTOMER PROFILE (ICP)             */}
+      {/* ==================================================================== */}
+      {deckView !== 'COMPARISON' && activeSection === 'target_market' && (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+          <div className="max-w-3xl space-y-2">
+            <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
+              Target Customer Profiles (ICP)
+            </span>
+            <h3 className="text-xl font-bold text-white">
+              Institutional Buyers with Immediate Budget Authority
+            </h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              We focus exclusively on institutional buyers where security breaches cause immediate financial settlement liability, regulatory enforcement actions, or catastrophic reputational damage.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+            {/* Buyer 1 */}
+            <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="flex items-center gap-2 text-white font-bold text-sm">
+                <Building className="w-4 h-4 text-cyan-400" />
+                <span>Tier 1 & Tier 2 Institutional Stock Brokers</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                {isIndia
+                  ? 'Active trading members (e.g., Zerodha, Groww, ICICI Securities, AngelOne, Kotak Securities) processing hundreds of thousands of retail and institutional orders daily, facing strict SEBI compliance.'
+                  : 'Prime brokerages and clearing firms (e.g., Morgan Stanley, Goldman Sachs, Interactive Brokers, Apex Clearing) executing high-volume dealer transactions and managing margin accounts.'}
+              </p>
+              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1 text-slate-400">
+                <div><strong>Primary Pain Point:</strong> Telephonic order fraud, account takeovers, and SEBI/FINRA supervisory audits.</div>
+                <div><strong>Deployment:</strong> FIX Drop-Copy Engine + SIP VoIP Call Interceptor.</div>
               </div>
             </div>
 
-            <div className="lg:col-span-6 space-y-4">
-              <h4 className="text-xs uppercase font-mono tracking-wider text-slate-400 font-bold">
-                Strategic Use of Funds
-              </h4>
-              <div className="space-y-2 text-xs">
-                <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
-                  <div className="flex justify-between font-semibold text-white">
-                    <span>42% — Core Neural Forensics & FIX Engineering</span>
-                    <span className="font-mono text-cyan-400">{isIndia ? '₹27.3 Cr' : '$4.2M'}</span>
-                  </div>
-                  <p className="text-[11px] text-slate-400">Low-latency acoustic models, TensorRT optimization, and exchange FIX gateways.</p>
-                </div>
+            {/* Buyer 2 */}
+            <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="flex items-center gap-2 text-white font-bold text-sm">
+                <Building className="w-4 h-4 text-cyan-400" />
+                <span>Stock Exchanges & Clearing Corporations (MIIs)</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                {isIndia
+                  ? 'National Stock Exchange (NSE), BSE, and Multi Commodity Exchange (MCX) responsible for national market surveillance, circuit breakers, and price band integrity.'
+                  : 'New York Stock Exchange (NYSE), Nasdaq, and Chicago Mercantile Exchange (CME) running real-time market surveillance to identify cross-market spoofing and manipulative swarms.'}
+              </p>
+              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1 text-slate-400">
+                <div><strong>Primary Pain Point:</strong> Synthetic news-induced flash crashes and uncontainable order book imbalances.</div>
+                <div><strong>Deployment:</strong> Exchange Colocation Gateway + Distributed Social Sentiment Stream.</div>
+              </div>
+            </div>
 
-                <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
-                  <div className="flex justify-between font-semibold text-white">
-                    <span>30% — Institutional Enterprise Sales & Distribution</span>
-                    <span className="font-mono text-emerald-400">{isIndia ? '₹19.5 Cr' : '$3.0M'}</span>
-                  </div>
-                  <p className="text-[11px] text-slate-400">Direct sales to top-tier brokerages, prime custodians, and corporate IR desks.</p>
-                </div>
+            {/* Buyer 3 */}
+            <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="flex items-center gap-2 text-white font-bold text-sm">
+                <Building className="w-4 h-4 text-cyan-400" />
+                <span>Asset Management Companies (AMCs) & Sovereign Funds</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                {isIndia
+                  ? 'Mutual fund houses (managing ₹65+ Lakh Crores in AUM) and portfolio management services (PMS) guarding institutional fund manager voices and high-value block orders.'
+                  : 'Institutional asset managers, sovereign wealth funds, and private hedge funds executing multi-million dollar block trades requiring uncompromised execution confidentiality.'}
+              </p>
+              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1 text-slate-400">
+                <div><strong>Primary Pain Point:</strong> Front-running via synthesized fund manager communications.</div>
+                <div><strong>Deployment:</strong> Executive Voice Provenance + Private Dealing Desk Gateway.</div>
+              </div>
+            </div>
 
-                <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
-                  <div className="flex justify-between font-semibold text-white">
-                    <span>18% — Regulatory Certification & Legal Defense</span>
-                    <span className="font-mono text-indigo-300">{isIndia ? '₹11.7 Cr' : '$1.8M'}</span>
-                  </div>
-                  <p className="text-[11px] text-slate-400">SOC2 Type II, ISO 27001, FINRA WORM compliance, and regulatory lobbying.</p>
-                </div>
-
-                <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
-                  <div className="flex justify-between font-semibold text-white">
-                    <span>10% — Working Capital & Infrastructure</span>
-                    <span className="font-mono text-slate-300">{isIndia ? '₹6.5 Cr' : '$1.0M'}</span>
-                  </div>
-                  <p className="text-[11px] text-slate-400">Multi-region cloud infrastructure (Mumbai & Virginia) and reserve buffer.</p>
-                </div>
+            {/* Buyer 4 */}
+            <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="flex items-center gap-2 text-white font-bold text-sm">
+                <Building className="w-4 h-4 text-cyan-400" />
+                <span>Public Listed Corporations & Investor Relations (IR)</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                {isIndia
+                  ? 'Top 1,000 NSE/BSE listed companies seeking to protect their market capitalization by cryptographically signing all official press releases and quarterly earnings commentary.'
+                  : 'Over 4,000 SEC-reporting public issuers seeking to prevent forged Form 8-K filings and deepfake CEO announcements from wiping out billions in shareholder equity.'}
+              </p>
+              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1 text-slate-400">
+                <div><strong>Primary Pain Point:</strong> Short-seller deepfakes and forged merger announcements.</div>
+                <div><strong>Deployment:</strong> C2PA Cryptographic Provenance Studio + Verified Ledger Badge.</div>
               </div>
             </div>
           </div>
@@ -877,115 +793,182 @@ Contact: ir@vemar.ai | Cryptographic Verification Hash: 9f82c401e7b9932a
       )}
 
       {/* ==================================================================== */}
-      {/* 10. SECTION: INTERACTIVE ROI CALCULATOR                              */}
+      {/* 9. SECTION: ENTERPRISE COMMERCIAL MODEL & DEPLOYMENT ARCHITECTURE   */}
       {/* ==================================================================== */}
-      {deckView !== 'COMPARISON' && activeSection === 'roi_calculator' && (
+      {deckView !== 'COMPARISON' && activeSection === 'business_model' && (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
-            <div>
-              <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
-                Institutional Loss Mitigation Model
-              </span>
-              <h3 className="text-xl font-bold text-white mt-1">
-                Interactive Institutional ROI Calculator
-              </h3>
+          <div className="max-w-3xl space-y-2">
+            <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
+              Enterprise Go-To-Market & Commercial Structure
+            </span>
+            <h3 className="text-xl font-bold text-white">
+              SaaS Subscription + In-Line Throughput Licensing
+            </h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              VEMAR AI monetizes through an institutional enterprise model combining an annual base platform license with capacity-based throughput pricing aligned with transaction volumes.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs">
+            <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="font-mono font-bold text-white text-sm">Tier 1: Corporate IR Provenance Seal</div>
+              <p className="text-slate-300 leading-relaxed">
+                Designed for public listed issuers to cryptographically sign earnings calls, press releases, and executive announcements with C2PA digital credentials and public verification QR ledgers.
+              </p>
+              <div className="pt-2 border-t border-slate-800 text-slate-400 font-mono text-[11px]">
+                Annual Base Platform License • Includes Google Cloud KMS HSM Key Ring & Tamper-Proof Public Verification Portal.
+              </div>
             </div>
 
-            <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
-              {(['broker', 'hedgefund', 'issuer', 'exchange'] as const).map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => setEntityType(type)}
-                  className={`px-3 py-1.5 rounded-md font-semibold transition-colors ${
-                    entityType === type ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {type === 'broker' ? 'Stock Broker' : type === 'hedgefund' ? 'Hedge Fund' : type === 'issuer' ? 'Listed Issuer' : 'Exchange MII'}
-                </button>
-              ))}
+            <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="font-mono font-bold text-cyan-300 text-sm">Tier 2: Broker Telephonic & FIX Firewall</div>
+              <p className="text-slate-300 leading-relaxed">
+                Designed for retail and institutional brokers. In-line inspection of SIP telephonic order lines, trader acoustic biometrics, and pre-trade order book correlation.
+              </p>
+              <div className="pt-2 border-t border-slate-800 text-slate-400 font-mono text-[11px]">
+                Base Platform License + Inbound Audio Channel Metering • Includes FIX 4.4 Tag 35=D quarantine gateway.
+              </div>
+            </div>
+
+            <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="font-mono font-bold text-emerald-300 text-sm">Tier 3: Exchange & MII Surveillance Grid</div>
+              <p className="text-slate-300 leading-relaxed">
+                Designed for stock exchanges, clearing corporations, and national regulators. Full-market crawler, multi-channel syndicate radar, and automated regulatory reporting dispatch.
+              </p>
+              <div className="pt-2 border-t border-slate-800 text-slate-400 font-mono text-[11px]">
+                Enterprise Multi-Market License • Includes Colocation Ingress, dedicated GPU inference pool, and SEBI/SEC direct filing.
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Sliders */}
-            <div className="lg:col-span-6 space-y-6">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-300 font-semibold">
-                    Assets Under Management / Turnover:
-                  </span>
-                  <span className="font-mono text-cyan-300 font-bold text-sm">
-                    {isIndia ? `₹${((aumValue * 83.5) / 10).toFixed(0)} Cr` : `$${aumValue.toLocaleString()}M`}
-                  </span>
+          {/* Deployment Topologies */}
+          <div className="p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-3 text-xs">
+            <h4 className="font-bold text-white text-sm flex items-center gap-2">
+              <Server className="w-4 h-4 text-cyan-400" />
+              <span>Institutional Deployment Topologies</span>
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-slate-300">
+              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+                <strong className="text-white block font-mono text-[11px]">Sovereign Cloud Deployment (SaaS)</strong>
+                <p className="text-slate-400 text-[11px] leading-relaxed">
+                  Dedicated tenant VPC hosted on sovereign Google Cloud zones (Mumbai/Delhi for India; Virginia for US). Full data isolation, MeitY empanelment, and SOC 2 Type II compliance.
+                </p>
+              </div>
+              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+                <strong className="text-white block font-mono text-[11px]">Exchange Colocation Deployment (On-Prem / Edge)</strong>
+                <p className="text-slate-400 text-[11px] leading-relaxed">
+                  Direct cross-connect appliances deployed at exchange colocation facilities (NSE BKC Mumbai, Equinix NY4 Secaucus). Sub-millisecond FIX packet inspection for high-frequency trading desks.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* 10. SECTION: VENTURE CAPITAL ALLOCATION & 18-MONTH MILESTONES        */}
+      {/* ==================================================================== */}
+      {deckView !== 'COMPARISON' && activeSection === 'the_ask' && (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+          <div className="max-w-3xl space-y-2">
+            <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
+              Institutional Capital Allocation & Roadmap
+            </span>
+            <h3 className="text-xl font-bold text-white">
+              Venture Capital Deployment & 18-Month Execution Milestones
+            </h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              We are raising institutional venture capital to scale low-latency infrastructure, complete regulatory empanelments, and expand enterprise distribution across institutional brokerages and exchanges.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Capital Allocation Breakdown */}
+            <div className="lg:col-span-6 space-y-3 text-xs">
+              <h4 className="font-bold text-white uppercase font-mono tracking-wider text-xs">
+                Strategic Use of Capital
+              </h4>
+
+              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
+                <div className="flex items-center justify-between font-bold text-white">
+                  <span>45% — Low-Latency Core Engineering & Colocation</span>
+                  <span className="text-cyan-400 font-mono">Infrastructure</span>
                 </div>
-                <input
-                  type="range"
-                  min={100}
-                  max={20000}
-                  step={100}
-                  value={aumValue}
-                  onChange={(e) => setAumValue(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-                />
+                <p className="text-slate-400 leading-relaxed">
+                  Deployment of dedicated NVIDIA L4/H100 GPU clusters, C++ TensorRT low-latency optimization, and physical cross-connect colocation at NSE BKC (Mumbai) and Equinix NY4 (Secaucus).
+                </p>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-300 font-semibold">
-                    Monthly Inbound Call / Trade Inquiries:
-                  </span>
-                  <span className="font-mono text-cyan-300 font-bold text-sm">
-                    {monthlyVolume.toLocaleString()} calls / orders
-                  </span>
+              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
+                <div className="flex items-center justify-between font-bold text-white">
+                  <span>30% — Institutional Enterprise Sales & Distribution</span>
+                  <span className="text-emerald-400 font-mono">GTM Expansion</span>
                 </div>
-                <input
-                  type="range"
-                  min={10000}
-                  max={500000}
-                  step={10000}
-                  value={monthlyVolume}
-                  onChange={(e) => setMonthlyVolume(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-                />
+                <p className="text-slate-400 leading-relaxed">
+                  Dedicated capital markets enterprise sales directors across Mumbai, GIFT City, New York, and London, driving pilot integrations with top-tier stock brokers and clearing corporations.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
+                <div className="flex items-center justify-between font-bold text-white">
+                  <span>15% — Regulatory Empanelment & Compliance Certifications</span>
+                  <span className="text-indigo-400 font-mono">Audits & Legal</span>
+                </div>
+                <p className="text-slate-400 leading-relaxed">
+                  Completing SEBI CSCRF institutional security audits, SOC 2 Type II attestation, ISO 27001, and legal certification of evidentiary WORM chain-of-custody validity.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
+                <div className="flex items-center justify-between font-bold text-white">
+                  <span>10% — Sovereign Cloud Operations & Working Capital</span>
+                  <span className="text-slate-300 font-mono">Operations</span>
+                </div>
+                <p className="text-slate-400 leading-relaxed">
+                  Multi-region sovereign cloud operations, high-availability disaster recovery testing, and general corporate working capital.
+                </p>
               </div>
             </div>
 
-            {/* Output Matrix */}
-            <div className="lg:col-span-6 bg-slate-950 rounded-2xl p-6 border border-slate-800 grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <span className="text-[11px] text-slate-400 block">Annual Fraud Losses Prevented</span>
-                <span className="text-xl sm:text-2xl font-black text-emerald-400 font-mono">
-                  {formatCurrency(fraudLossAverted)}
-                </span>
-                <span className="text-[10px] text-slate-500 block">Voice vishing & wire diversion defense</span>
-              </div>
+            {/* 18-Month Execution Milestones */}
+            <div className="lg:col-span-6 space-y-3 text-xs">
+              <h4 className="font-bold text-white uppercase font-mono tracking-wider text-xs">
+                18-Month Institutional Execution Roadmap
+              </h4>
 
-              <div className="space-y-1">
-                <span className="text-[11px] text-slate-400 block">Regulatory Penalty Avoidance</span>
-                <span className="text-xl sm:text-2xl font-black text-cyan-400 font-mono">
-                  {formatCurrency(regulatoryFineAvoidance)}
-                </span>
-                <span className="text-[10px] text-slate-500 block">
-                  {isIndia ? 'SEBI Failure to Supervise Penalty' : 'SEC Failure to Supervise Penalty'}
-                </span>
-              </div>
+              <div className="space-y-2.5">
+                <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-emerald-400 font-mono">Phase 1: Months 1 – 6</span>
+                    <span className="text-[10px] text-slate-500 font-mono uppercase">Core Deployment</span>
+                  </div>
+                  <strong className="text-white block">Exchange Colocation & Top Broker Pilots</strong>
+                  <p className="text-slate-400 leading-relaxed">
+                    Complete physical colocation integration at NSE BKC; deploy pilot pre-trade FIX gateways with 5 leading institutional brokers; finalize C2PA Cloud KMS HSM signing pipeline.
+                  </p>
+                </div>
 
-              <div className="space-y-1 pt-3 border-t border-slate-800">
-                <span className="text-[11px] text-slate-400 block">Annual VEMAR Subscription</span>
-                <span className="text-lg font-bold text-slate-300 font-mono">
-                  {formatCurrency(softwareSubscriptionCost)}
-                </span>
-                <span className="text-[10px] text-slate-500 block">24/7 SIEM SLA & FIX In-line Gateway</span>
-              </div>
+                <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-cyan-400 font-mono">Phase 2: Months 7 – 12</span>
+                    <span className="text-[10px] text-slate-500 font-mono uppercase">Regulatory Scale</span>
+                  </div>
+                  <strong className="text-white block">SEBI Empanelment & Vernacular Voice Matrix</strong>
+                  <p className="text-slate-400 leading-relaxed">
+                    Complete formal SEBI CSCRF framework certification; expand vernacular acoustic anti-spoofing coverage to Hindi, Gujarati, Tamil, and Bengali; integrate SEBI SCORES 2.0 direct API.
+                  </p>
+                </div>
 
-              <div className="space-y-1 pt-3 border-t border-slate-800">
-                <span className="text-[11px] text-slate-400 block">Projected Institutional ROI</span>
-                <span className="text-2xl font-black text-white font-mono flex items-center gap-1">
-                  {estimatedRoiMultiple}x
-                  <ArrowUpRight className="w-5 h-5 text-emerald-400" />
-                </span>
-                <span className="text-[10px] text-emerald-400 block font-semibold">Net Payback &lt; 45 Days</span>
+                <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-purple-400 font-mono">Phase 3: Months 13 – 18</span>
+                    <span className="text-[10px] text-slate-500 font-mono uppercase">Global Rollout</span>
+                  </div>
+                  <strong className="text-white block">US Prime Brokerage & SEC Form TCR Automation</strong>
+                  <p className="text-slate-400 leading-relaxed">
+                    Deploy Equinix NY4 colocation node in Secaucus; onboard first wave of US FINRA broker-dealers; activate automated SEC Form TCR whistleblower evidence dispatch.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
