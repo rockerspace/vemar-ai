@@ -20,6 +20,7 @@ import {
 import { UserRole, Jurisdiction } from '../types';
 import { VemarLogo } from './VemarLogo';
 import { useLocalization } from '../context/LocalizationContext';
+import { RegulatoryGatewayIndicator } from './RegulatoryGatewayIndicator';
 
 interface HeaderProps {
   currentRole: UserRole;
@@ -155,6 +156,12 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </button>
           </div>
+
+          {/* Real-Time Regulatory Gateway Connectivity Indicator (SEBI & SEC) */}
+          <RegulatoryGatewayIndicator
+            jurisdiction={jurisdiction}
+            onOpenAuthenticator={() => setActiveTab('authenticator')}
+          />
         </div>
 
         {/* Top-Right: Language Switcher, SEBI Glossary Button, & Persona Selector */}

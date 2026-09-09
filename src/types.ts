@@ -206,3 +206,33 @@ export interface BenchmarkAccuracyMetric {
   falsePositiveRate: number;
   latencyP99Ms: number;
 }
+
+// Real-Time Regulatory Gateway Telemetry
+export interface GatewayHealth {
+  id: string;
+  name: string;
+  shortName: string;
+  authority: string;
+  status: 'CONNECTED' | 'DEGRADED' | 'OFFLINE';
+  latencyMs: number;
+  endpoint: string;
+  protocol: string;
+  registryCount: number;
+  lastSync: string;
+  verifiedFingerprint: string;
+  features: string[];
+}
+
+export interface SystemHealthResponse {
+  status: string;
+  service?: string;
+  version?: string;
+  supportedJurisdictions?: string[];
+  hasGeminiKey: boolean;
+  timestamp?: string;
+  gateways?: {
+    sebi: GatewayHealth;
+    sec: GatewayHealth;
+  };
+}
+

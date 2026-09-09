@@ -23,6 +23,7 @@ import {
 import { VemarLogo } from './VemarLogo';
 import { Jurisdiction } from '../types';
 import { useLocalization } from '../context/LocalizationContext';
+import { RegulatoryGatewayIndicator } from './RegulatoryGatewayIndicator';
 
 interface LandingPageProps {
   jurisdiction: Jurisdiction;
@@ -160,6 +161,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </button>
             </div>
 
+            {/* Real-time Regulatory Gateway Connectivity Indicator */}
+            <RegulatoryGatewayIndicator
+              jurisdiction={jurisdiction}
+              onOpenAuthenticator={() => onEnterPlatform('authenticator')}
+              compact={true}
+            />
+
             {/* Language Switcher */}
             <div className="flex items-center bg-slate-950/80 p-0.5 rounded-lg border border-slate-800 text-[11px]">
               <button
@@ -277,8 +285,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </button>
           </div>
 
-          {/* Right Action: Direct to Main Page Button */}
+          {/* Right Action: Direct to Main Page Button & Live Gateway Indicator */}
           <div className="flex items-center gap-3">
+            <div className="hidden lg:block">
+              <RegulatoryGatewayIndicator
+                jurisdiction={jurisdiction}
+                onOpenAuthenticator={() => onEnterPlatform('authenticator')}
+              />
+            </div>
+
             <button
               id="landing-enter-main-page-header-btn"
               type="button"

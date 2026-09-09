@@ -10,16 +10,51 @@ import {
   Jurisdiction,
   EnterpriseAuditLog,
   EnterpriseAPIKey,
-  BenchmarkAccuracyMetric
+  BenchmarkAccuracyMetric,
+  SystemHealthResponse,
+  GatewayHealth
 } from '../types';
 
-export async function checkSystemHealth(): Promise<{ status: string; hasGeminiKey: boolean; version?: string }> {
+export async function checkSystemHealth(): Promise<SystemHealthResponse> {
   try {
     const res = await fetch('/api/health');
     if (!res.ok) throw new Error('Health check failed');
     return await res.json();
   } catch (err) {
-    return { status: 'offline', hasGeminiKey: false };
+    return {
+      status: 'offline',
+      hasGeminiKey: false,
+      gateways: {
+        sebi: {
+          id: 'gateway-sebi-in',
+          name: 'SEBI Regulatory Circular & Intermediary Gateway',
+          shortName: 'SEBI / NSE / BSE',
+          authority: 'Securities and Exchange Board of India',
+          status: 'OFFLINE',
+          latencyMs: 0,
+          endpoint: 'https://gateway.sebi.gov.in/v2/registry/authenticator',
+          protocol: 'mTLS 1.3',
+          registryCount: 0,
+          lastSync: new Date().toISOString(),
+          verifiedFingerprint: 'UNREACHABLE',
+          features: ['Master Circular Registry', 'Intermediary License Registry', 'Exchange Hash Verification']
+        },
+        sec: {
+          id: 'gateway-sec-us',
+          name: 'US SEC EDGAR & FINRA Master Depository Gateway',
+          shortName: 'SEC EDGAR / FINRA',
+          authority: 'U.S. Securities and Exchange Commission',
+          status: 'OFFLINE',
+          latencyMs: 0,
+          endpoint: 'https://data.sec.gov/edgar/v1/accession/verify',
+          protocol: 'TLS 1.3',
+          registryCount: 0,
+          lastSync: new Date().toISOString(),
+          verifiedFingerprint: 'UNREACHABLE',
+          features: ['SEC EDGAR Real-Time Feed', 'FINRA BrokerCheck CRD Feed', 'C2PA Manifest Root']
+        }
+      }
+    };
   }
 }
 
