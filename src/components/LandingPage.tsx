@@ -24,19 +24,31 @@ import { VemarLogo } from './VemarLogo';
 import { Jurisdiction } from '../types';
 import { useLocalization } from '../context/LocalizationContext';
 import { RegulatoryGatewayIndicator } from './RegulatoryGatewayIndicator';
+import { DynamicBackground, BackgroundTheme } from './DynamicBackground';
+import { AmbienceControl } from './AmbienceControl';
+import { useAuth } from '../context/AuthContext';
 
 interface LandingPageProps {
   jurisdiction: Jurisdiction;
   onSelectJurisdiction: (j: Jurisdiction) => void;
   onEnterPlatform: (targetTab?: string) => void;
+  currentTheme?: BackgroundTheme;
+  onSelectTheme?: (theme: BackgroundTheme) => void;
+  animationEnabled?: boolean;
+  onToggleAnimation?: (enabled: boolean) => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
   jurisdiction,
   onSelectJurisdiction,
-  onEnterPlatform
+  onEnterPlatform,
+  currentTheme = 'cyber_command',
+  onSelectTheme,
+  animationEnabled = true,
+  onToggleAnimation
 }) => {
   const { language, setLanguage, isHindi, setMarket, openGlossary, t } = useLocalization();
+  const { user, openAuthModal } = useAuth();
   const isUS = jurisdiction === 'US' || jurisdiction === 'GLOBAL';
   const [activeIncidentIndex, setActiveIncidentIndex] = useState(0);
 
@@ -115,7 +127,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const currentIncident = liveThreatBenchmarks[activeIncidentIndex];
 
   return (
-    <div id="vemar-landing-page" className="min-h-screen bg-[#070b13] text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-white">
+    <div id="vemar-landing-page" className="relative min-h-screen bg-[#070b13] text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-white">
+      {/* Dynamic Ambient Background Canvas */}
+      <DynamicBackground theme={currentTheme} animationEnabled={animationEnabled} />
+
       {/* Top Floating Announcement Bar */}
       <div className="bg-gradient-to-r from-cyan-950/90 via-slate-900 to-blue-950/90 border-b border-cyan-500/20 px-4 py-2 text-xs">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
@@ -203,6 +218,34 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <span>{isHindi ? 'सेबी शब्दावली' : 'SEBI Glossary'}</span>
             </button>
 
+            {/* Dynamic Ambience Background Selector */}
+            {onSelectTheme && (
+              <AmbienceControl
+                currentTheme={currentTheme}
+                onSelectTheme={onSelectTheme}
+                animationEnabled={animationEnabled}
+                onToggleAnimation={onToggleAnimation || (() => {})}
+              />
+            )}
+
+            {/* Client Portal Quick Login */}
+            {!user ? (
+              <button
+                id="landing-quick-login-btn"
+                type="button"
+                onClick={openAuthModal}
+                className="px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs flex items-center gap-1.5 transition-all border border-slate-700/80 cursor-pointer"
+              >
+                <Lock className="w-3 h-3 text-cyan-400" />
+                <span>Client Login</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-950/40 border border-emerald-800/60 text-emerald-300 text-[11px] font-mono">
+                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                <span className="font-sans font-bold">{user.name.split(' ')[0]} (MFA Active)</span>
+              </div>
+            )}
+
             <button
               id="landing-quick-enter-btn"
               type="button"
@@ -286,7 +329,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           {/* Right Action: Direct to Main Page Button & Live Gateway Indicator */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <div className="hidden lg:block">
               <RegulatoryGatewayIndicator
                 jurisdiction={jurisdiction}
@@ -294,11 +337,33 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               />
             </div>
 
+            {!user ? (
+              <button
+                id="landing-header-login-btn"
+                type="button"
+                onClick={openAuthModal}
+                className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white font-bold text-xs flex items-center gap-1.5 border border-slate-700 transition-all cursor-pointer shadow-sm"
+              >
+                <Lock className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Client Login</span>
+              </button>
+            ) : (
+              <button
+                id="landing-header-user-btn"
+                type="button"
+                onClick={() => onEnterPlatform('mission_control')}
+                className="px-3 py-1.5 rounded-xl bg-slate-900 border border-cyan-500/40 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span>{user.name.split(' ')[0]} (MFA)</span>
+              </button>
+            )}
+
             <button
               id="landing-enter-main-page-header-btn"
               type="button"
               onClick={() => onEnterPlatform('scanner')}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold text-xs tracking-wide transition-all shadow-lg shadow-cyan-600/30 flex items-center gap-2 group"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold text-xs tracking-wide transition-all shadow-lg shadow-cyan-600/30 flex items-center gap-2 group cursor-pointer"
             >
               <span>Launch VEMAR Platform</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />

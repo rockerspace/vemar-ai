@@ -209,7 +209,7 @@ export const DigitalProvenanceStudio: React.FC<DigitalProvenanceStudioProps> = (
                   Verified C2PA Provenance Certificate
                 </h3>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  {activeSeal.sealId}
+                  {activeSeal.provenanceSealId}
                 </span>
               </div>
 
@@ -218,7 +218,7 @@ export const DigitalProvenanceStudio: React.FC<DigitalProvenanceStudioProps> = (
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest block font-bold">
-                      {activeSeal.category}
+                      {activeSeal.issuingCategory}
                     </span>
                     <h4 className="text-sm font-bold text-white mt-0.5">{issuerName}</h4>
                     <p className="text-xs text-slate-400">{documentTitle}</p>
@@ -231,11 +231,11 @@ export const DigitalProvenanceStudio: React.FC<DigitalProvenanceStudioProps> = (
                 <div className="space-y-1.5 pt-2 border-t border-slate-800 text-[11px] font-mono">
                   <div className="flex items-center justify-between text-slate-400">
                     <span>Issued At:</span>
-                    <span className="text-slate-200">{new Date(activeSeal.timestamp).toUTCString()}</span>
+                    <span className="text-slate-200">{new Date(activeSeal.issuedTimestamp).toUTCString()}</span>
                   </div>
                   <div className="flex items-center justify-between text-slate-400">
                     <span>Certificate Authority:</span>
-                    <span className="text-cyan-400 font-semibold">{activeSeal.issuingAuthority}</span>
+                    <span className="text-cyan-400 font-semibold">{activeSeal.verifiedRegistryRoot}</span>
                   </div>
                   <div className="flex items-center justify-between text-slate-400">
                     <span>Signature Standard:</span>

@@ -236,3 +236,22 @@ export interface SystemHealthResponse {
   };
 }
 
+// Client Portal Authentication & Multi-Factor Security (MFA)
+export type AuthProviderType = 'google' | 'sms';
+export type MfaMethodType = 'totp' | 'sms';
+
+export interface ClientUser {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  authProvider: AuthProviderType;
+  mfaVerified: boolean;
+  mfaMethod: MfaMethodType;
+  role: UserRole;
+  organization: string;
+  clearanceTier: 'TIER_1_SURVEILLANCE' | 'TIER_2_BROKER_EXECUTION' | 'TIER_3_RETAIL_INVESTOR';
+  sessionToken: string;
+  loginTime: string;
+}
+

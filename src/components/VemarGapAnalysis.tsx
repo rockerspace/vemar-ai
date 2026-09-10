@@ -25,6 +25,7 @@ interface VemarGapAnalysisProps {
   jurisdiction: Jurisdiction;
   onNavigateToPitch?: () => void;
   onNavigateToArchitecture?: () => void;
+  onNavigateToScanner?: () => void;
 }
 
 interface GapItem {

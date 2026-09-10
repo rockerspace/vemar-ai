@@ -430,9 +430,61 @@ The application header features a real-time connectivity status widget connected
 
 ---
 
+## 🔐 Client Authentication & Multi-Factor Authentication (MFA)
+
+VEMAR AI implements zero-trust access control engineered to meet the stringent identity guidelines of **SEBI CSCRF Chapter IV** and **SEC Rule 17a-4 / FINRA 4330**:
+
+- **Multi-Provider Client Login**:
+  - **Google SSO (Gmail)**: Seamless OAuth-ready authentication for institutional corporate Google Workspace accounts and retail Gmail users.
+  - **SMS One-Time Password (OTP)**: Direct mobile telephone authentication with simulated multi-carrier SMS dispatch.
+- **Mandatory Multi-Factor Authentication (MFA)**:
+  - **TOTP Authenticator Apps**: Google Authenticator, Microsoft Authenticator, and hardware security keys.
+  - **SMS Secondary Verification**: 6-digit out-of-band mobile verification codes.
+- **Institutional Clearance & Session Enforcement**:
+  - Authenticated sessions receive a cryptographic session token (`VMR-TOK-...`) and clearance tiering (`TIER_1: Full Surveillance & Pre-Trade Interception`).
+  - Persistent session management with real-time MFA status indicators, active terminal role synchronization, and immediate session termination.
+
+---
+
+## 📄 Institutional PDF Forensic Audit Report Export (`jsPDF`)
+
+Forensic analysts and compliance officers can export audit-ready, tamper-evident PDF summaries directly from the `ForensicScanner` and `IncidentDossierModal`:
+
+- **Audit-Grade Document Generation**: Formatted using `jspdf` for high-resolution vector text, geometric risk score dials, and clean tabular evidence layouts.
+- **Statutory Regulatory Admissibility**:
+  - **India**: Formatted for **SEBI CSCRF 2024 Section 6.2** incident reporting and Indian Evidence Act Section 65B court admissibility.
+  - **United States**: Structured for **SEC Rule 17a-4(f)** immutable WORM compliance and **SEC Form TCR** whistleblower filing dossiers.
+- **Cryptographic Evidence Sealing**:
+  - Embedded **SHA-256 hash** digest computed across all forensic artifacts, threat vectors, and biometric signals.
+  - Timestamps, auditor persona identification, and multi-modal neural engine provenance.
+
+---
+
+## 🎨 Dynamic Canvas Ambience Engine & Customer Mission Control
+
+- **Dynamic Reactive Particle Engine**: High-performance HTML5 Canvas simulation with smooth 60fps particle constellations, kinetic connections, and velocity dampening.
+- **4 Institutional Atmosphere Themes**:
+  - **Cyber Command** (Default deep cyan/cobalt grid for terminal operations)
+  - **Quantum Emerald** (Trading floor green for market compliance desks)
+  - **Solar Amber** (Surveillance alert amber for risk escalation)
+  - **Deep Void** (Minimalist high-contrast dark space for low eye-strain operations)
+- **Customer Mission Control**: Interactive contextual dispatch bar providing real-time persona-targeted surveillance shortcuts for **Retail Investors**, **Broker Desks**, and **MII / Exchange Regulators**.
+
+---
+
+## 🛡️ Institutional Resiliency & Fail-Safe Diagnostic Intercept
+
+For mission-critical capital markets operations where surveillance cannot silently crash, VEMAR AI features an enterprise-grade fail-safe architecture:
+
+- **Root Diagnostic Interception (`ErrorBoundary`)**: Catches unhandled component-level lifecycle exceptions and prevents blank-screen catastrophic failure.
+- **Zero-Loss State Preservation**: Traps error telemetry, component stack traces, and active session tokens securely in the client state.
+- **Autonomous Recovery Console**: Delivers a forensic dark terminal overlay allowing the trader or compliance officer to inspect the exception stack trace and trigger immediate safe-state application reloads.
+
+---
+
 ## 🛠️ Technology Stack
 
-- **Frontend**: React 19, TypeScript, Tailwind CSS 4, Motion (`motion/react`), Lucide Icons
+- **Frontend**: React 19, TypeScript, Tailwind CSS 4, Motion (`motion/react`), Lucide Icons, jsPDF (`jspdf`)
 - **Backend & Middleware**: Node.js, Express, Vite SPA Middleware, esbuild
 - **Google Cloud & AI**:
   - **Google Cloud Pub/Sub**: High-throughput distributed event streaming (< 12ms ACK)

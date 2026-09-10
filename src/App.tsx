@@ -13,7 +13,12 @@ import { InvestorPitchDeck } from './components/InvestorPitchDeck';
 import { VemarArchitectureStudio } from './components/VemarArchitectureStudio';
 import { VemarGapAnalysis } from './components/VemarGapAnalysis';
 import { LocalizationProvider, useLocalization } from './context/LocalizationContext';
+import { AuthProvider } from './context/AuthContext';
 import { SebiGlossaryModal } from './components/SebiGlossaryModal';
+import { ClientAuthModal } from './components/ClientAuthModal';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { DynamicBackground, BackgroundTheme } from './components/DynamicBackground';
+import { CustomerMissionControl } from './components/CustomerMissionControl';
 import {
   ShieldCheck,
   ShieldAlert,
@@ -32,6 +37,14 @@ function MainApp() {
   const [currentRole, setCurrentRole] = useState<UserRole>('retail_investor');
   const [activeTab, setActiveTab] = useState<string>('landing');
   const [hasGeminiKey, setHasGeminiKey] = useState(true);
+
+  // Dynamic Ambience & Theme state with localStorage persistence
+  const [bgTheme, setBgTheme] = useState<BackgroundTheme>(() => {
+    return (localStorage.getItem('vemar_bg_theme') as BackgroundTheme) || 'cyber_command';
+  });
+  const [animationEnabled, setAnimationEnabled] = useState<boolean>(() => {
+    return localStorage.getItem('vemar_bg_anim') !== 'false';
+  });
 
   const { market, setMarket, isHindi, t } = useLocalization();
   const [jurisdiction, setJurisdiction] = useState<Jurisdiction>(market);
@@ -65,12 +78,19 @@ function MainApp() {
         jurisdiction={jurisdiction}
         onSelectJurisdiction={handleSelectJurisdiction}
         onEnterPlatform={(targetTab) => setActiveTab(targetTab || 'scanner')}
+        currentTheme={bgTheme}
+        onSelectTheme={setBgTheme}
+        animationEnabled={animationEnabled}
+        onToggleAnimation={setAnimationEnabled}
       />
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#080d16] text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-white font-sans">
+    <div className="relative min-h-screen bg-[#080d16] text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-white font-sans overflow-x-hidden">
+      {/* Dynamic Interactive Ambient Canvas Background */}
+      <DynamicBackground theme={bgTheme} animationEnabled={animationEnabled} />
+
       {/* Top Application Header & Navigation with India/Global Switcher */}
       <Header
         currentRole={currentRole}
@@ -80,102 +100,22 @@ function MainApp() {
         hasGeminiKey={hasGeminiKey}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        currentTheme={bgTheme}
+        onSelectTheme={setBgTheme}
+        animationEnabled={animationEnabled}
+        onToggleAnimation={setAnimationEnabled}
       />
 
-      {/* Investor & Enterprise Quick Navigation Ribbon */}
-      <div className="bg-slate-900/80 border-b border-slate-800/80 px-4 sm:px-6 py-2">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-              {t('ribbon.badge', 'VEMAR AI ENTERPRISE')}
-            </span>
-            <span className="text-slate-300">
-              {jurisdiction === 'IN' ? (
-                <>
-                  {isHindi
-                    ? 'संस्थागत ब्रोकर्स, समाशोधन निगमों एवं नियामकों के लिए '
-                    : 'Production-grade multi-modal defense under '}
-                  <strong className="text-emerald-400">
-                    {isHindi ? 'सेबी मास्टर परिपत्र (SEBI / NSE / BSE)' : 'SEBI Master Circulars (India)'}
-                  </strong>
-                  .
-                </>
-              ) : (
-                <>
-                  {isHindi
-                    ? 'वैश्विक संस्थागत ब्रोकर्स एवं मार्केट मेकर्स के लिए '
-                    : 'Production-grade multi-modal defense under '}
-                  <strong className="text-blue-400">
-                    {isHindi ? 'एसईसी एवं फिनरा विनियम (US SEC / FINRA)' : 'US SEC / FINRA (Global Markets)'}
-                  </strong>
-                  .
-                </>
-              )}
-            </span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              id="quick-vemar-arch-btn"
-              type="button"
-              onClick={() => setActiveTab('vemar_arch')}
-              className={`px-3 py-1 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${
-                activeTab === 'vemar_arch'
-                  ? 'bg-cyan-600 text-white shadow-sm'
-                  : 'bg-cyan-950/40 text-cyan-300 hover:bg-cyan-900/50 border border-cyan-800/40'
-              }`}
-            >
-              <Cpu className="w-3.5 h-3.5" />
-              <span>{t('ribbon.pipeline_btn', 'VEMAR Pipeline')}</span>
-            </button>
-
-            <button
-              id="quick-vemar-gaps-btn"
-              type="button"
-              onClick={() => setActiveTab('vemar_gaps')}
-              className={`px-3 py-1 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${
-                activeTab === 'vemar_gaps'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'bg-indigo-950/40 text-indigo-300 hover:bg-indigo-900/50 border border-indigo-800/40'
-              }`}
-            >
-              <AlertOctagon className="w-3.5 h-3.5" />
-              <span>{t('ribbon.gaps_btn', '8 Industry Gaps')}</span>
-            </button>
-
-            <button
-              id="quick-pitch-deck-btn"
-              type="button"
-              onClick={() => setActiveTab('investor_pitch')}
-              className={`px-3 py-1 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${
-                activeTab === 'investor_pitch'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-emerald-950/40 text-emerald-300 hover:bg-emerald-900/50 border border-emerald-800/40'
-              }`}
-            >
-              <TrendingUp className="w-3.5 h-3.5" />
-              <span>{t('ribbon.pitch_btn', 'Dual Pitch Decks')}</span>
-            </button>
-
-            <button
-              id="quick-enterprise-hub-btn"
-              type="button"
-              onClick={() => setActiveTab('enterprise')}
-              className={`px-3 py-1 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${
-                activeTab === 'enterprise'
-                  ? 'bg-cyan-600 text-white shadow-sm'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
-              }`}
-            >
-              <Server className="w-3.5 h-3.5" />
-              <span>{t('ribbon.gateway_btn', 'SIEM & OMS Gateway')}</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* Customer Mission Control & Persona Telemetry Station */}
+      <CustomerMissionControl
+        currentRole={currentRole}
+        jurisdiction={jurisdiction}
+        activeTab={activeTab}
+        onNavigateTab={setActiveTab}
+      />
 
       {/* Main Body Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <main className="relative z-10 flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* Active Tab View Rendering */}
         {activeTab === 'scanner' && (
           <ForensicScanner currentRole={currentRole} jurisdiction={jurisdiction} />
@@ -264,9 +204,14 @@ function MainApp() {
 
 export default function App() {
   return (
-    <LocalizationProvider>
-      <MainApp />
-      <SebiGlossaryModal />
-    </LocalizationProvider>
+    <ErrorBoundary>
+      <LocalizationProvider>
+        <AuthProvider>
+          <MainApp />
+          <SebiGlossaryModal />
+          <ClientAuthModal />
+        </AuthProvider>
+      </LocalizationProvider>
+    </ErrorBoundary>
   );
 }

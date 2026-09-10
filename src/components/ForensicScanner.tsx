@@ -28,6 +28,8 @@ import { analyzeSyntheticContent } from '../services/api';
 import { AudioBiometricVisualizer } from './AudioBiometricVisualizer';
 import { VisualArtifactInspector } from './VisualArtifactInspector';
 import { IncidentDossierModal } from './IncidentDossierModal';
+import { downloadForensicAuditReport } from '../utils/pdfExport';
+import { useAuth } from '../context/AuthContext';
 
 interface ForensicScannerProps {
   currentRole: UserRole;
@@ -38,6 +40,8 @@ export const ForensicScanner: React.FC<ForensicScannerProps> = ({
   currentRole,
   jurisdiction = 'IN' as Jurisdiction
 }) => {
+  const { user } = useAuth();
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
   // Active selected channel
   const [selectedChannel, setSelectedChannel] = useState<ThreatChannel>('video_frame');
   
@@ -545,23 +549,62 @@ export const ForensicScanner: React.FC<ForensicScannerProps> = ({
                 </div>
               </div>
 
-              {/* Action Buttons: Generate Incident Dossier */}
+              {/* Action Buttons: Export Report & Generate Incident Dossier */}
               <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
                 <span className="text-xs text-slate-400">
                   {jurisdiction === 'US'
-                    ? 'Statutory reporting ready for SEC Form TCR & FINRA Market Surveillance.'
-                    : 'Statutory reporting ready for SEBI SCORES 2.0 & National Cyber Crime Portal.'}
+                    ? 'Audit report formatted for SEC Rule 17a-4 WORM & FINRA 2010 surveillance logs.'
+                    : 'Audit report formatted for SEBI CSCRF 2024 & Section 65B court admissibility.'}
                 </span>
 
-                <button
-                  id="open-dossier-modal-btn"
-                  type="button"
-                  onClick={() => setIsDossierOpen(true)}
-                  className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-cyan-600/20 transition-all"
-                >
-                  <FileDown className="w-4 h-4" />
-                  {jurisdiction === 'US' ? 'Export SEC TCR Incident Dossier' : 'Export SEBI Regulatory Dossier'}
-                </button>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {/* Primary Export Report Button (PDF with jsPDF) */}
+                  <button
+                    id="export-pdf-report-btn"
+                    type="button"
+                    onClick={() => {
+                      if (!analysisResult) return;
+                      setIsExportingPDF(true);
+                      try {
+                        downloadForensicAuditReport(analysisResult, {
+                          caseTitle: activeBenchmark?.title || 'Forensic-Incident',
+                          jurisdiction: jurisdiction || 'IN',
+                          auditorRole: currentRole,
+                          auditorEmail: user?.email || 'compliance@vemar.internal',
+                          engineSource: analysisEngineSource || 'VEMAR Vertex AI Neural Forensics'
+                        });
+                      } catch (err) {
+                        console.error('Failed to generate PDF audit report', err);
+                      } finally {
+                        setTimeout(() => setIsExportingPDF(false), 2200);
+                      }
+                    }}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-emerald-950/40 transition-all cursor-pointer"
+                    title="Generate and download formatted PDF summary of current forensic analysis using jsPDF"
+                  >
+                    {isExportingPDF ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-200 animate-bounce" />
+                        <span>Audit PDF Downloaded!</span>
+                      </>
+                    ) : (
+                      <>
+                        <FileDown className="w-4 h-4" />
+                        <span>Export Report (PDF)</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    id="open-dossier-modal-btn"
+                    type="button"
+                    onClick={() => setIsDossierOpen(true)}
+                    className="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-cyan-600/20 transition-all"
+                  >
+                    <FileSpreadsheet className="w-4 h-4" />
+                    <span>{jurisdiction === 'US' ? 'SEC TCR Dossier' : 'SEBI Dossier'}</span>
+                  </button>
+                </div>
               </div>
             </div>
           ) : (

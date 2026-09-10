@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Copy, Check, Download, Printer, ShieldAlert, FileText, Lock, Building, Scale, Globe2 } from 'lucide-react';
+import { X, Copy, Check, Download, Printer, ShieldAlert, FileText, Lock, Building, Scale, Globe2, FileDown } from 'lucide-react';
 import { ForensicAnalysisResult, Jurisdiction } from '../types';
+import { downloadForensicAuditReport } from '../utils/pdfExport';
 
 interface IncidentDossierModalProps {
   isOpen: boolean;
@@ -198,6 +199,25 @@ Securities Market Synthetic Media & Phishing Sentinel
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              id="download-pdf-dossier-btn"
+              type="button"
+              onClick={() => {
+                downloadForensicAuditReport(analysis, {
+                  caseTitle: sampleTitle,
+                  jurisdiction: (jurisdiction || 'IN') as Jurisdiction,
+                  auditorRole: 'broker_compliance',
+                  auditorEmail: 'compliance@vemar.internal',
+                  engineSource: 'VEMAR Vertex AI Regulatory Gateway'
+                });
+              }}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-emerald-950/40"
+              title="Download formatted multi-page audit report PDF using jsPDF"
+            >
+              <FileDown className="w-3.5 h-3.5" />
+              <span>Export PDF Report</span>
+            </button>
+
             <button
               id="copy-dossier-btn"
               type="button"
