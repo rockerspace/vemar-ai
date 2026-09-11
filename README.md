@@ -430,6 +430,29 @@ The application header features a real-time connectivity status widget connected
 
 ---
 
+## 🚨 Real-Time Threat Notification Toast System & Audio Chime Synthesizer
+
+VEMAR AI features an institutional-grade, real-time alert toast system engineered to instantly notify risk desks, compliance officers, and institutional traders when an active scanning session or surveillance stream intercepts a critical security event:
+
+- **Specialized Threat Classifications**:
+  - 🎙️ **Voice Spoofing Interception (`voice_spoof`)**: Triggered when acoustic spectral analysis identifies synthetic vocoder phase jitter, artificial frequency cutoffs (>7.8 kHz), flatline pitch contours (F0), or cloned executive identities attempting unauthorized telephonic order executions.
+  - ⚠️ **High-Risk Entity Detection (`high_risk_entity`)**: Alerts users to unregistered advisory syndicates, barred broker-dealers, fraudulent Telegram boiler-rooms, or forged corporate disclosure circulars attempting deceptive securities inducements.
+  - 🛑 **Pre-Trade Execution Interception (`pre_trade_halt`)**: Immediate notification of automated FIX Tag 35=D order quarantines with sub-16ms latency.
+  - ℹ️ **Surveillance Telemetry Ingress (`info`)**: Status notices when 16kHz PCM audio buffers or live microphone surveillance streams are engaged.
+- **Synthesized Zero-Asset Audio Chimes (Web Audio API)**:
+  - Custom multi-harmonic audio chimes generated entirely via the native browser `AudioContext` without relying on external media files.
+  - Distinct acoustic signatures: low dual-pulse cautionary chimes for high-risk entities, high-frequency descending warning sweeps for synthetic voice clones, and abrupt dissonant warning tones for pre-trade halts.
+  - Master audio mute/unmute toggle in the toast container with state persistence.
+- **Tactical Incident Actions**:
+  - **Inspect Threat Dossier**: Instantly navigates to or opens the full regulatory evidence dossier (SEBI SCORES 2.0 / SEC Form TCR).
+  - **Export PDF Report**: One-click generation of the cryptographic `jsPDF` forensic audit summary.
+  - **Enforce Quarantine / Dismiss**: Interactive dismissal and containment confirmation.
+- **Live Surveillance Telemetry & Ingress Simulator Bar**:
+  - An interactive control bar in the `ForensicScanner` allows compliance officers and auditors to test simulated threat ingress payloads (`Simulate Voice Spoof`, `Simulate High-Risk Entity`, `Pre-Trade FIX Halt`).
+  - Table-level toast broadcast buttons in the `SurveillanceRadar` allow instant incident alerts across all 24-hour national market feed logs.
+
+---
+
 ## 🔐 Client Authentication & Multi-Factor Authentication (MFA)
 
 VEMAR AI implements zero-trust access control engineered to meet the stringent identity guidelines of **SEBI CSCRF Chapter IV** and **SEC Rule 17a-4 / FINRA 4330**:

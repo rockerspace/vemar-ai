@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Volume2, ShieldAlert, Cpu, CheckCircle2, Activity } from 'lucide-react';
+import { useNotificationToast } from '../context/NotificationToastContext';
 
 interface AudioVisualizerProps {
   isSynthetic?: boolean;
@@ -12,6 +13,7 @@ export const AudioBiometricVisualizer: React.FC<AudioVisualizerProps> = ({
   sampleName = 'Executive Telephonic Order / Regulatory Call',
   frequencies
 }) => {
+  const { notifyVoiceSpoof } = useNotificationToast();
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackMode, setPlaybackMode] = useState<'synthetic' | 'authentic'>(isSynthetic ? 'synthetic' : 'authentic');
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -51,6 +53,15 @@ export const AudioBiometricVisualizer: React.FC<AudioVisualizerProps> = ({
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(140, ctx.currentTime);
             gain.gain.setValueAtTime(0.04, ctx.currentTime);
+
+            // Trigger real-time voice spoofing notification toast alert
+            notifyVoiceSpoof({
+              entityName: sampleName,
+              confidence: 96,
+              message: 'Acoustic spectral analyzer detected vocoder phase jitter, >7.8 kHz artificial spectral cutoff, and flatline pitch contour.',
+              markers: ['Vocoder Phase Jitter (42ms)', 'High-Frequency Cutoff (>7.8 kHz)', 'Zero Biological Breath Pauses'],
+              haltStatus: 'Telephonic Order Verification Quarantined'
+            });
           } else {
             // Warm human voice fundamental frequency simulation
             osc.type = 'sine';

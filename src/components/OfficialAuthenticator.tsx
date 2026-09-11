@@ -16,6 +16,7 @@ import {
 import { verifyCommunication, VerifyCommunicationResponse } from '../services/api';
 import { Jurisdiction } from '../types';
 import { useLocalization } from '../context/LocalizationContext';
+import { useNotificationToast } from '../context/NotificationToastContext';
 
 interface OfficialAuthenticatorProps {
   jurisdiction?: Jurisdiction;
@@ -23,6 +24,7 @@ interface OfficialAuthenticatorProps {
 
 export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ jurisdiction = 'IN' as Jurisdiction }) => {
   const { isHindi } = useLocalization();
+  const { notifyHighRiskEntity } = useNotificationToast();
   const isUS = jurisdiction === 'US' || jurisdiction === 'GLOBAL';
   const [activeTab, setActiveTab] = useState<'circulars' | 'intermediaries'>('circulars');
   
@@ -64,6 +66,15 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
         jurisdiction: jurisdiction as Jurisdiction
       });
       setCircularResult(res);
+
+      if (!res.verified && (res.status?.includes('COUNTERFEIT') || res.warning)) {
+        notifyHighRiskEntity({
+          entityName: `Counterfeit Document (${query})`,
+          riskScore: res.confidence || 92,
+          message: res.warning || 'Forged regulatory notice detected. High probability of fraudulent extortion or panic creation.',
+          violation: isUS ? 'SEC Rule 10b-5 Market Abuse' : 'SEBI PFUTP Reg 4(2)(k)'
+        });
+      }
     } catch (err: any) {
       console.error(err);
     } finally {
@@ -83,6 +94,16 @@ export const OfficialAuthenticator: React.FC<OfficialAuthenticatorProps> = ({ ju
         jurisdiction: jurisdiction as Jurisdiction
       });
       setIntermediaryResult(res);
+
+      if (!res.verified || res.warning) {
+        notifyHighRiskEntity({
+          entityName: query,
+          riskScore: res.confidence || 95,
+          message: res.warning || 'Entity not found in official SEBI/SEC authorized registry archives. Deceptive inducement risk.',
+          violation: isUS ? 'FINRA Rule 2010 / SEC Rule 10b-5' : 'SEBI Intermediary Regs / SEBI Act Sec 11B',
+          haltStatus: 'Clearing Settlement Hold Enforced'
+        });
+      }
     } catch (err: any) {
       console.error(err);
     } finally {

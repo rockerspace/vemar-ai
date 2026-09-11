@@ -255,3 +255,32 @@ export interface ClientUser {
   loginTime: string;
 }
 
+// Real-Time Threat Notification Toast System
+export type NotificationToastType = 
+  | 'voice_spoof' 
+  | 'high_risk_entity' 
+  | 'pre_trade_halt' 
+  | 'critical_threat' 
+  | 'info' 
+  | 'success';
+
+export interface ThreatNotificationToast {
+  id: string;
+  type: NotificationToastType;
+  title: string;
+  subtitle?: string;
+  message: string;
+  threatLevel: ThreatLevel;
+  riskScore?: number;
+  entityName?: string;
+  channel?: ThreatChannel | string;
+  timestamp: number;
+  acousticMarkers?: string[];
+  haltStatus?: string; // e.g. 'FIX Tag 35=D Quarantined (<16ms)'
+  statutoryRule?: string; // e.g. 'SEBI PFUTP Reg 4(2)(k)' or 'SEC Rule 10b-5'
+  dossierAction?: () => void;
+  pdfAction?: () => void;
+  quarantineAction?: () => void;
+  durationMs?: number; // default e.g. 9000
+}
+

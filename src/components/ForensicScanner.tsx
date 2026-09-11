@@ -20,7 +20,12 @@ import {
   Scale,
   Activity,
   Layers,
-  FileDown
+  FileDown,
+  Radio,
+  Zap,
+  AlertOctagon,
+  Volume2,
+  Bell
 } from 'lucide-react';
 import { BENCHMARK_CASES } from '../data/benchmarkCases';
 import { BenchmarkCase, ForensicAnalysisResult, ThreatChannel, UserRole, Jurisdiction } from '../types';
@@ -30,6 +35,7 @@ import { VisualArtifactInspector } from './VisualArtifactInspector';
 import { IncidentDossierModal } from './IncidentDossierModal';
 import { downloadForensicAuditReport } from '../utils/pdfExport';
 import { useAuth } from '../context/AuthContext';
+import { useNotificationToast } from '../context/NotificationToastContext';
 
 interface ForensicScannerProps {
   currentRole: UserRole;
@@ -41,6 +47,7 @@ export const ForensicScanner: React.FC<ForensicScannerProps> = ({
   jurisdiction = 'IN' as Jurisdiction
 }) => {
   const { user } = useAuth();
+  const { notifyVoiceSpoof, notifyHighRiskEntity, notifyPreTradeHalt, notifyInfo } = useNotificationToast();
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   // Active selected channel
   const [selectedChannel, setSelectedChannel] = useState<ThreatChannel>('video_frame');
@@ -125,6 +132,10 @@ export const ForensicScanner: React.FC<ForensicScannerProps> = ({
         mediaRecorderRef.current.stop();
       }
       setIsRecording(false);
+      notifyInfo(
+        '🎙️ Voice Sample Captured',
+        'Acoustic buffer recorded. Click "Execute Deep Forensic Audit" to run spectral analysis and vocoder inspection.'
+      );
     } else {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -149,6 +160,10 @@ export const ForensicScanner: React.FC<ForensicScannerProps> = ({
         mediaRecorderRef.current = mediaRecorder;
         setIsRecording(true);
         setActiveBenchmark(null);
+        notifyInfo(
+          '🎙️ Live Voice Surveillance Active',
+          'Sampling 16kHz PCM audio stream. Monitoring for vocoder phase jitter, synthetic timbre, and unauthorized trade requests.'
+        );
       } catch (err) {
         console.error('Microphone access denied:', err);
       }
@@ -174,11 +189,133 @@ export const ForensicScanner: React.FC<ForensicScannerProps> = ({
 
       setAnalysisResult(res.analysis);
       setAnalysisEngineSource(res.source);
+
+      // Trigger Real-Time Notification Toast based on deep scan telemetry
+      const analysis = res.analysis;
+      const isVoice = selectedChannel === 'audio_call' || 
+                      analysis.channelAnalyzed === 'audio_call' || 
+                      analysis.forensicMarkers?.some(m => m.category === 'Acoustic / Biometric');
+      const isHighRisk = analysis.threatLevel === 'CRITICAL' || 
+                         analysis.threatLevel === 'HIGH' || 
+                         analysis.syntheticRiskScore >= 70;
+      const targetEntity = (analysis.executiveOrEntityImpersonated && analysis.executiveOrEntityImpersonated !== 'None')
+        ? analysis.executiveOrEntityImpersonated
+        : activeBenchmark?.targetEntity;
+
+      if (isHighRisk) {
+        if (isVoice) {
+          notifyVoiceSpoof({
+            entityName: targetEntity || (jurisdiction === 'US' ? 'Hedge Fund CIO / Wire Desk' : 'SEBI Enforcement Officer'),
+            confidence: analysis.syntheticRiskScore,
+            message: analysis.primaryVerdict || 'Real-time acoustic spectral analysis identified synthetic neural voice synthesis with unnatural vocoder phase coherence.',
+            markers: analysis.forensicMarkers?.filter(m => m.category === 'Acoustic / Biometric').map(m => m.indicator).slice(0, 3),
+            statutoryRule: analysis.securitiesRegulationsViolated?.[0]?.code || (jurisdiction === 'US' ? '18 U.S. Code § 1343 / FINRA Rule 2010' : 'SEBI PFUTP Reg 4(2)(k)'),
+            haltStatus: 'FIX 4.4 Tag 35=D Execution Intercepted (<16ms)',
+            onInspect: () => setIsDossierOpen(true),
+            onExportPDF: () => downloadForensicAuditReport(analysis, {
+              caseTitle: activeBenchmark?.title || 'Forensic-Incident',
+              jurisdiction: jurisdiction || 'IN',
+              auditorRole: currentRole,
+              auditorEmail: user?.email || 'compliance@vemar.internal',
+              engineSource: analysisEngineSource || 'VEMAR Vertex AI Neural Forensics'
+            })
+          });
+        } else {
+          notifyHighRiskEntity({
+            entityName: targetEntity || 'Unauthorized Market Actor',
+            riskScore: analysis.syntheticRiskScore,
+            message: analysis.primaryVerdict || 'High-risk entity impersonation attempting deceptive securities inducement.',
+            violation: analysis.securitiesRegulationsViolated?.[0]?.code || (jurisdiction === 'US' ? 'SEC Rule 10b-5' : 'SEBI Act Sec 11B'),
+            statutoryRule: analysis.securitiesRegulationsViolated?.[0]?.code,
+            haltStatus: 'Clearing Settlement Hold Enforced',
+            onInspect: () => setIsDossierOpen(true),
+            onExportPDF: () => downloadForensicAuditReport(analysis, {
+              caseTitle: activeBenchmark?.title || 'Forensic-Incident',
+              jurisdiction: jurisdiction || 'IN',
+              auditorRole: currentRole,
+              auditorEmail: user?.email || 'compliance@vemar.internal',
+              engineSource: analysisEngineSource || 'VEMAR Vertex AI Neural Forensics'
+            })
+          });
+        }
+      }
     } catch (err: any) {
       console.error('Analysis error:', err);
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  // Real-time threat ingress simulation handlers for audits and testing
+  const handleSimulateVoiceSpoof = () => {
+    const target = jurisdiction === 'US' 
+      ? 'Ken Griffin (Hedge Fund CIO Clone - $45M Wire)' 
+      : 'R. Ramanathan (SEBI Enforcement Cell Joint Director)';
+    const rule = jurisdiction === 'US' ? '18 U.S. Code § 1343 / FINRA Rule 2010' : 'SEBI PFUTP Reg 4(2)(k) / IT Act 66D';
+    
+    notifyVoiceSpoof({
+      entityName: target,
+      confidence: 97,
+      message: `Active voice surveillance intercepted inbound VoIP call matching synthetic TTS vocoder profile. Telephonic order authorization intercepted before clearing gateway.`,
+      markers: ['Vocoder Phase Jitter (42ms)', 'High-Freq Spectral Cutoff (>7.8 kHz)', 'Monotonic Pitch Contour (F0)'],
+      statutoryRule: rule,
+      haltStatus: 'FIX Tag 35=D Order Quarantined (<16ms)',
+      onInspect: () => {
+        const voiceCase = BENCHMARK_CASES.find(b => b.channel === 'audio_call' && (b.jurisdiction === jurisdiction || jurisdiction === 'GLOBAL')) || BENCHMARK_CASES[1];
+        handleSelectBenchmark(voiceCase);
+      },
+      onExportPDF: () => {
+        if (analysisResult) {
+          downloadForensicAuditReport(analysisResult, {
+            caseTitle: activeBenchmark?.title || 'Voice-Spoof-Simulation',
+            jurisdiction: jurisdiction || 'IN',
+            auditorRole: currentRole,
+            auditorEmail: user?.email || 'compliance@vemar.internal',
+            engineSource: analysisEngineSource || 'VEMAR Vertex AI Neural Forensics'
+          });
+        }
+      }
+    });
+  };
+
+  const handleSimulateHighRiskEntity = () => {
+    const target = jurisdiction === 'US'
+      ? 'Apex Prime Capital Partners (BARRED BD #999999)'
+      : 'Apex Wealth Advisors (Unregistered Advisory Syndicate)';
+    const rule = jurisdiction === 'US' ? 'SEC Rule 10b-5 / FINRA Rule 2010' : 'SEBI (Investment Advisers) Regulations 2014';
+
+    notifyHighRiskEntity({
+      entityName: target,
+      riskScore: 94,
+      message: `Surveillance radar detected mass solicitation originating from unverified IP cluster referencing barred/unregistered broker entity.`,
+      violation: rule,
+      statutoryRule: rule,
+      haltStatus: 'Exchange Clearing Settlement Hold Enforced',
+      onInspect: () => {
+        const phishCase = BENCHMARK_CASES.find(b => b.channel === 'email' && (b.jurisdiction === jurisdiction || jurisdiction === 'GLOBAL')) || BENCHMARK_CASES[2];
+        handleSelectBenchmark(phishCase);
+      },
+      onExportPDF: () => {
+        if (analysisResult) {
+          downloadForensicAuditReport(analysisResult, {
+            caseTitle: activeBenchmark?.title || 'High-Risk-Entity-Simulation',
+            jurisdiction: jurisdiction || 'IN',
+            auditorRole: currentRole,
+            auditorEmail: user?.email || 'compliance@vemar.internal',
+            engineSource: analysisEngineSource || 'VEMAR Vertex AI Neural Forensics'
+          });
+        }
+      }
+    });
+  };
+
+  const handleSimulatePreTradeHalt = () => {
+    notifyPreTradeHalt({
+      symbol: jurisdiction === 'US' ? 'NASDAQ: BIOX' : 'NSE: TATAMOTORS',
+      reason: 'Automated surveillance detected high-frequency sentiment anomaly originating from synchronized deepfake media payload. All algo block orders paused.',
+      riskScore: 92,
+      rule: jurisdiction === 'US' ? 'SEC Rule 15c3-5 Market Access' : 'SEBI Master Circular on Algorithmic Trading'
+    });
   };
 
   const channelIcons: Record<ThreatChannel, any> = {
@@ -239,6 +376,70 @@ export const ForensicScanner: React.FC<ForensicScannerProps> = ({
               </button>
             );
           })}
+        </div>
+      </div>
+
+      {/* Real-Time Live Surveillance Telemetry & Ingress Simulator Bar */}
+      <div id="live-surveillance-telemetry-bar" className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="relative flex items-center justify-center">
+            <span className="absolute inline-flex h-5 w-5 animate-ping rounded-full bg-emerald-400 opacity-30" />
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-800">
+              <Radio className="w-4 h-4 animate-pulse" />
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold text-white flex items-center gap-1.5 font-mono">
+                REAL-TIME THREAT RADAR: ARMED
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800/60 font-semibold">
+                Sub-380ms Latency
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/60 hidden sm:inline">
+                SEBI / SEC Real-Time Polling
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Active forensic listener monitoring telephonic audio streams, executive deepfakes, and unregistered entity solicitations.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mr-1 hidden sm:inline">
+            Test Live Ingress:
+          </span>
+          <button
+            id="simulate-voice-spoof-btn"
+            type="button"
+            onClick={handleSimulateVoiceSpoof}
+            className="px-3 py-1.5 rounded-lg bg-red-950/60 hover:bg-red-900/80 text-red-300 hover:text-red-100 border border-red-800/60 font-semibold text-xs flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+            title="Simulate real-time voice spoofing interception alert"
+          >
+            <PhoneCall className="w-3.5 h-3.5 text-red-400 animate-pulse" />
+            <span>Simulate Voice Spoof</span>
+          </button>
+          <button
+            id="simulate-high-risk-entity-btn"
+            type="button"
+            onClick={handleSimulateHighRiskEntity}
+            className="px-3 py-1.5 rounded-lg bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 hover:text-amber-100 border border-amber-800/60 font-semibold text-xs flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+            title="Simulate high-risk unregistered entity alert"
+          >
+            <AlertOctagon className="w-3.5 h-3.5 text-amber-400" />
+            <span>Simulate High-Risk Entity</span>
+          </button>
+          <button
+            id="simulate-pre-trade-halt-btn"
+            type="button"
+            onClick={handleSimulatePreTradeHalt}
+            className="px-3 py-1.5 rounded-lg bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 hover:text-cyan-100 border border-cyan-800/60 font-semibold text-xs flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+            title="Simulate FIX Tag 35=D pre-trade halt"
+          >
+            <Zap className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Pre-Trade FIX Halt</span>
+          </button>
         </div>
       </div>
 

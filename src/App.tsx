@@ -14,6 +14,8 @@ import { VemarArchitectureStudio } from './components/VemarArchitectureStudio';
 import { VemarGapAnalysis } from './components/VemarGapAnalysis';
 import { LocalizationProvider, useLocalization } from './context/LocalizationContext';
 import { AuthProvider } from './context/AuthContext';
+import { NotificationToastProvider } from './context/NotificationToastContext';
+import { NotificationToastContainer } from './components/NotificationToastContainer';
 import { SebiGlossaryModal } from './components/SebiGlossaryModal';
 import { ClientAuthModal } from './components/ClientAuthModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -207,9 +209,12 @@ export default function App() {
     <ErrorBoundary>
       <LocalizationProvider>
         <AuthProvider>
-          <MainApp />
-          <SebiGlossaryModal />
-          <ClientAuthModal />
+          <NotificationToastProvider>
+            <MainApp />
+            <NotificationToastContainer />
+            <SebiGlossaryModal />
+            <ClientAuthModal />
+          </NotificationToastProvider>
         </AuthProvider>
       </LocalizationProvider>
     </ErrorBoundary>

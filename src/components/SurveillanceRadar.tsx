@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Radar, AlertCircle, ShieldAlert, CheckCircle2, TrendingUp, Users, Cpu, Activity, Clock, ShieldCheck, ArrowUpRight, Zap, Globe2 } from 'lucide-react';
+import { Radar, AlertCircle, ShieldAlert, CheckCircle2, TrendingUp, Users, Cpu, Activity, Clock, ShieldCheck, ArrowUpRight, Zap, Globe2, Bell, Radio } from 'lucide-react';
 import { fetchThreatTelemetry } from '../services/api';
 import { ThreatTelemetry, Jurisdiction } from '../types';
+import { useNotificationToast } from '../context/NotificationToastContext';
 
 interface SurveillanceRadarProps {
   jurisdiction?: Jurisdiction;
 }
 
 export const SurveillanceRadar: React.FC<SurveillanceRadarProps> = ({ jurisdiction = 'IN' }) => {
+  const { notifyVoiceSpoof, notifyHighRiskEntity } = useNotificationToast();
   const [telemetry, setTelemetry] = useState<ThreatTelemetry | null>(null);
   const [loading, setLoading] = useState(true);
   const [filterChannel, setFilterChannel] = useState<string>('all');
@@ -308,6 +310,7 @@ export const SurveillanceRadar: React.FC<SurveillanceRadarProps> = ({ jurisdicti
                 <th className="py-2.5 px-3 text-center">Risk Score</th>
                 <th className="py-2.5 px-3">Status</th>
                 <th className="py-2.5 px-3">Impact Mitigated</th>
+                <th className="py-2.5 px-3 text-right">Radar Toast</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800 font-mono">
@@ -345,6 +348,34 @@ export const SurveillanceRadar: React.FC<SurveillanceRadarProps> = ({ jurisdicti
                     </span>
                   </td>
                   <td className="py-3 px-3 font-sans text-slate-300 text-[11px]">{inc.impactPrevented}</td>
+                  <td className="py-3 px-3 text-right">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (inc.channel === 'audio_call') {
+                          notifyVoiceSpoof({
+                            entityName: inc.targetAsset,
+                            confidence: inc.riskScore,
+                            message: `${inc.threatType}. Flagged by: ${inc.flaggedBy}.`,
+                            markers: ['Acoustic Vocoder Cutoff', 'Prosody Flattening', 'VoIP Spoofed Gateway'],
+                            haltStatus: 'Telephonic Order Intercepted (<16ms)'
+                          });
+                        } else {
+                          notifyHighRiskEntity({
+                            entityName: inc.targetAsset,
+                            riskScore: inc.riskScore,
+                            message: `${inc.threatType}. Detection: ${inc.detectionMethod}.`,
+                            haltStatus: 'Exchange Clearing Settlement Hold'
+                          });
+                        }
+                      }}
+                      className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 border border-slate-700 text-[10px] font-semibold flex items-center gap-1 ml-auto transition-colors"
+                      title="Dispatch real-time toast alert for this incident"
+                    >
+                      <Bell className="w-3 h-3" />
+                      <span>Alert</span>
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
