@@ -284,3 +284,48 @@ export interface ThreatNotificationToast {
   durationMs?: number; // default e.g. 9000
 }
 
+// Cryptographically Signed PDF Report Types
+export interface CryptographicReportSignature {
+  signatureId: string;
+  sha256Digest: string;
+  signatureAlgorithm: 'ECDSA_P256_SHA256' | 'RSA_PSS_SHA256' | 'HMAC_SHA256';
+  digitalSignature: string;
+  signerName: string;
+  signerRole: UserRole;
+  signerOrganization: string;
+  certificateSerial: string;
+  keyFingerprint: string;
+  timestampAuthority: {
+    tsaName: string;
+    token: string;
+    rfc3161Timestamp: string;
+    ntpSynchronized: boolean;
+  };
+  c2paManifest: {
+    manifestVersion: string;
+    claimGenerator: string;
+    assertions: {
+      action: string;
+      parameters: Record<string, any>;
+    }[];
+  };
+  admissibilityStatute: string;
+  nonRepudiationAttestation: string;
+  verificationUrl: string;
+  issuedAt: string;
+}
+
+export interface SigningOptions {
+  signerName?: string;
+  signerOrganization?: string;
+  signerRole?: UserRole;
+  signatureAlgorithm?: 'ECDSA_P256_SHA256' | 'RSA_PSS_SHA256' | 'HMAC_SHA256';
+  certificateSerial?: string;
+  includeC2paManifest?: boolean;
+  includeStatutoryCertificate?: boolean;
+  includeTsaToken?: boolean;
+  watermarkClassification?: 'CONFIDENTIAL - REGULATORY FILING' | 'COURT EVIDENCE // STRICT' | 'INSTITUTIONAL AUDIT TRAIL' | 'SEBI / SEC STATUTORY DISCLOSURE';
+  overrideTimestamp?: string;
+}
+
+

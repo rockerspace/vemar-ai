@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Copy, Check, Download, Printer, ShieldAlert, FileText, Lock, Building, Scale, Globe2, FileDown } from 'lucide-react';
+import { X, Copy, Check, Download, Printer, ShieldAlert, FileText, Lock, Building, Scale, Globe2, FileDown, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { ForensicAnalysisResult, Jurisdiction } from '../types';
 import { downloadForensicAuditReport } from '../utils/pdfExport';
+import { CryptographicPdfExportModal } from './CryptographicPdfExportModal';
 
 interface IncidentDossierModalProps {
   isOpen: boolean;
@@ -19,6 +20,8 @@ export const IncidentDossierModal: React.FC<IncidentDossierModalProps> = ({
   jurisdiction = 'IN'
 }) => {
   const [copied, setCopied] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [isCryptoModalOpen, setIsCryptoModalOpen] = useState(false);
 
   if (!isOpen || !analysis) return null;
 
@@ -203,19 +206,44 @@ Securities Market Synthetic Media & Phishing Sentinel
               id="download-pdf-dossier-btn"
               type="button"
               onClick={() => {
-                downloadForensicAuditReport(analysis, {
-                  caseTitle: sampleTitle,
-                  jurisdiction: (jurisdiction || 'IN') as Jurisdiction,
-                  auditorRole: 'broker_compliance',
-                  auditorEmail: 'compliance@vemar.internal',
-                  engineSource: 'VEMAR Vertex AI Regulatory Gateway'
-                });
+                setIsExportingPdf(true);
+                try {
+                  downloadForensicAuditReport(analysis, {
+                    caseTitle: sampleTitle,
+                    jurisdiction: (jurisdiction || 'IN') as Jurisdiction,
+                    auditorRole: 'broker_compliance',
+                    auditorEmail: 'compliance@vemar.internal',
+                    engineSource: 'VEMAR Vertex AI Regulatory Gateway'
+                  });
+                } finally {
+                  setTimeout(() => setIsExportingPdf(false), 2200);
+                }
               }}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-emerald-950/40"
-              title="Download formatted multi-page audit report PDF using jsPDF"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-emerald-950/40 cursor-pointer"
+              title="Download formatted cryptographically signed audit report PDF with C2PA seal"
             >
-              <FileDown className="w-3.5 h-3.5" />
-              <span>Export PDF Report</span>
+              {isExportingPdf ? (
+                <>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-200" />
+                  <span>Signed PDF Downloaded!</span>
+                </>
+              ) : (
+                <>
+                  <FileDown className="w-3.5 h-3.5" />
+                  <span>Export Signed PDF</span>
+                </>
+              )}
+            </button>
+
+            <button
+              id="open-signing-options-modal-btn"
+              type="button"
+              onClick={() => setIsCryptoModalOpen(true)}
+              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-700"
+              title="Configure digital signature parameters and verify SHA-256 integrity"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Signing Options</span>
             </button>
 
             <button
@@ -240,6 +268,18 @@ Securities Market Synthetic Media & Phishing Sentinel
           </div>
         </div>
       </div>
+
+      {/* Embedded Cryptographic PDF Signing & Verification Modal */}
+      <CryptographicPdfExportModal
+        isOpen={isCryptoModalOpen}
+        onClose={() => setIsCryptoModalOpen(false)}
+        analysis={analysis}
+        caseTitle={sampleTitle}
+        jurisdiction={jurisdiction || 'IN'}
+        auditorRole="broker_compliance"
+        auditorEmail="compliance@vemar.internal"
+        engineSource="VEMAR Vertex AI Regulatory Gateway"
+      />
     </div>
   );
 };

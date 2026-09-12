@@ -859,7 +859,8 @@ Analyze the submitted material with extreme forensic precision. Return a pure JS
           }
         });
 
-        const rawText = response.text || '{}';
+        let rawText = response.text || '{}';
+        rawText = rawText.replace(/```(?:json)?\n?/gi, '').replace(/```$/gi, '').trim();
         const parsedJson = JSON.parse(rawText);
         return res.json({
           success: true,
@@ -880,7 +881,22 @@ Analyze the submitted material with extreme forensic precision. Return a pure JS
     });
   } catch (err: any) {
     console.error('Analysis error:', err);
-    res.status(500).json({ error: err.message || 'Forensic analysis failed' });
+    try {
+      const fallbackReport = generateDeterministicForensicReport(
+        req.body?.channel || 'text_message',
+        req.body?.textContent || '',
+        Boolean(req.body?.imageBase64),
+        Boolean(req.body?.audioBase64),
+        req.body?.jurisdiction || 'IN'
+      );
+      return res.json({
+        success: true,
+        source: 'RECOVERY_HEURISTIC_FORENSIC_ANALYZER',
+        analysis: fallbackReport
+      });
+    } catch (innerErr) {
+      return res.status(500).json({ error: err.message || 'Forensic analysis failed' });
+    }
   }
 });
 
@@ -1144,6 +1160,14 @@ function generateDeterministicForensicReport(channel: string, text: string = '',
 
 // Vite middleware setup
 async function startServer() {
+  // Prevent any unmatched /api/* requests from ever returning HTML / index.html
+  app.all('/api/*', (req, res) => {
+    res.status(404).json({
+      success: false,
+      error: `API endpoint not found: ${req.method} ${req.originalUrl}`
+    });
+  });
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
