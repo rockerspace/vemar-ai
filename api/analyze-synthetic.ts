@@ -182,25 +182,37 @@ Analyze the provided content and return a structured JSON assessment with synthe
           parts.push({ text: `[Submitted Market Content]:\n${textContent}` });
         }
 
-        const response = await ai.models.generateContent({
-          model: 'gemini-3.8-flash',
-          contents: [{ parts }],
-          config: {
-            responseMimeType: 'application/json',
-            temperature: 0.2
-          }
-        });
+        const models = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.1-flash-lite'];
+        let response: any = null;
 
-        let rawText = response.text || '{}';
-        rawText = rawText.replace(/```(?:json)?\n?/gi, '').replace(/```$/gi, '').trim();
-        const parsed = JSON.parse(rawText);
-        return res.status(200).json({
-          success: true,
-          source: 'GEMINI_NEURAL_FORENSIC_ENGINE',
-          analysis: parsed
-        });
-      } catch (geminiErr: any) {
-        console.warn('Vercel serverless Gemini call failed, using fallback:', geminiErr.message);
+        for (const m of models) {
+          try {
+            response = await ai.models.generateContent({
+              model: m,
+              contents: [{ parts }],
+              config: {
+                responseMimeType: 'application/json',
+                temperature: 0.2
+              }
+            });
+            if (response?.text) break;
+          } catch {
+            continue;
+          }
+        }
+
+        if (response?.text) {
+          let rawText = response.text || '{}';
+          rawText = rawText.replace(/```(?:json)?\n?/gi, '').replace(/```$/gi, '').trim();
+          const parsed = JSON.parse(rawText);
+          return res.status(200).json({
+            success: true,
+            source: 'GEMINI_NEURAL_FORENSIC_ENGINE',
+            analysis: parsed
+          });
+        }
+      } catch (_geminiErr: any) {
+        // Fall back seamlessly to deterministic analyzer
       }
     }
 
