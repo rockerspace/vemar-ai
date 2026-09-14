@@ -14,7 +14,15 @@ import {
 import { useLocalization, SEBI_FINANCIAL_GLOSSARY, SebiTermDefinition } from '../context/LocalizationContext';
 
 export const SebiGlossaryModal: React.FC = () => {
-  const { isGlossaryOpen, closeGlossary, language, setLanguage, isHindi } = useLocalization();
+  const {
+    isGlossaryOpen,
+    closeGlossary,
+    language,
+    setLanguage,
+    isHindi,
+    languageMeta,
+    openLanguageModal
+  } = useLocalization();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
@@ -78,17 +86,27 @@ export const SebiGlossaryModal: React.FC = () => {
             {/* Language toggle inside modal */}
             <button
               type="button"
-              onClick={() => setLanguage(isHindi ? 'en' : 'hi')}
-              className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition-all"
+              onClick={openLanguageModal}
+              className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
+              title="Change platform language"
             >
               <Languages className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{isHindi ? 'Switch to English' : 'हिन्दी में देखें'}</span>
+              <span>{languageMeta.flag || '🌐'} {languageMeta.nativeName}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setLanguage(isHindi ? 'en' : 'hi')}
+              className="hidden sm:flex px-2 py-1 rounded-lg text-xs font-semibold bg-slate-850 hover:bg-slate-800 text-slate-300 border border-slate-750 transition-all cursor-pointer"
+              title="Toggle English / Hindi"
+            >
+              <span>{isHindi ? 'EN' : 'हिन्दी'}</span>
             </button>
 
             <button
               type="button"
               onClick={closeGlossary}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>

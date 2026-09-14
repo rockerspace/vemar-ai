@@ -23,6 +23,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { DynamicBackground, BackgroundTheme } from './components/DynamicBackground';
 import { CustomerMissionControl } from './components/CustomerMissionControl';
 import { MarketNewsTicker } from './components/MarketNewsTicker';
+import { LanguageSelector } from './components/LanguageSelector';
 import {
   ShieldCheck,
   ShieldAlert,
@@ -239,6 +240,7 @@ export default function App() {
             <NotificationToastContainer />
             <SebiGlossaryModal />
             <ClientAuthModal />
+            <LanguageSelector variant="modal-only" />
           </NotificationToastProvider>
         </AuthProvider>
       </LocalizationProvider>

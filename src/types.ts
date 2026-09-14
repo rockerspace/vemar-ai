@@ -2,7 +2,12 @@ export type UserRole = 'retail_investor' | 'broker_compliance' | 'mii_regulator'
 
 export type Jurisdiction = 'IN' | 'US' | 'GLOBAL';
 
-export type Language = 'en' | 'hi';
+export type {
+  Language,
+  IndianLanguage,
+  GlobalForeignLanguage,
+  LanguageMeta
+} from './types/languages';
 
 export type MarketMode = 'IN' | 'GLOBAL';
 

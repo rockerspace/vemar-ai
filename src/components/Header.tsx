@@ -32,6 +32,7 @@ import { RegulatoryGatewayIndicator } from './RegulatoryGatewayIndicator';
 import { AmbienceControl } from './AmbienceControl';
 import { BackgroundTheme } from './DynamicBackground';
 import { useAuth } from '../context/AuthContext';
+import { LanguageSelector } from './LanguageSelector';
 
 interface HeaderProps {
   currentRole: UserRole;
@@ -228,38 +229,8 @@ export const Header: React.FC<HeaderProps> = ({
             />
           )}
 
-          {/* Language Switcher (English / हिन्दी) */}
-          <div className="bg-slate-900/90 p-1 rounded-xl border border-slate-800 flex items-center text-xs shadow-inner">
-            <div className="px-1.5 py-1 text-[11px] text-slate-400 font-semibold flex items-center gap-1">
-              <Languages className="w-3.5 h-3.5 text-cyan-400" />
-            </div>
-            <button
-              id="lang-en-btn"
-              type="button"
-              onClick={() => setLanguage('en')}
-              className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${
-                language === 'en'
-                  ? 'bg-cyan-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-              title="Switch interface language to English"
-            >
-              <span>EN</span>
-            </button>
-            <button
-              id="lang-hi-btn"
-              type="button"
-              onClick={() => setLanguage('hi')}
-              className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${
-                language === 'hi'
-                  ? 'bg-amber-600 text-white shadow-sm font-bold'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-              title="इंटरफेस भाषा को हिन्दी में बदलें (Switch to Hindi)"
-            >
-              <span>हिन्दी</span>
-            </button>
-          </div>
+          {/* Multi-Language Switcher (Indian Regional & Global Foreign Languages) */}
+          <LanguageSelector variant="header" />
 
           {/* SEBI Financial Glossary Button */}
           <button

@@ -1,7 +1,18 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
 import { Jurisdiction } from '../types';
+import {
+  Language,
+  LanguageMeta,
+  ALL_LANGUAGES_META,
+  INDIAN_LANGUAGES_META,
+  GLOBAL_FOREIGN_LANGUAGES_META,
+  getLanguageMeta,
+  isIndianLanguageCode,
+  isGlobalLanguageCode
+} from '../types/languages';
+import { ALL_UI_TRANSLATIONS, getLocalizedText } from '../locales';
 
-export type Language = 'en' | 'hi';
+export type { Language, LanguageMeta } from '../types/languages';
 export type MarketMode = 'IN' | 'GLOBAL';
 
 export interface SebiTermDefinition {
@@ -188,151 +199,22 @@ export const SEBI_FINANCIAL_GLOSSARY: SebiTermDefinition[] = [
   }
 ];
 
-// Master Translations Dictionary
-export const UI_TRANSLATIONS: Record<Language, Record<string, string>> = {
-  en: {
-    // Brand & Header
-    'brand.title': 'VEMAR AI',
-    'brand.tagline': 'Voice, Entity & Media Authentication and Risk Intelligence',
-    'brand.edition': 'ENTERPRISE v3.0',
-    'market.label': 'Market:',
-    'market.india': 'India (SEBI)',
-    'market.global': 'Global (SEC / FINRA)',
-    'market.india_short': 'India',
-    'market.global_short': 'Global',
-    'language.label': 'Language:',
-    'language.en': 'English',
-    'language.hi': 'हिन्दी (Hindi)',
-    'glossary.btn': 'SEBI Financial Glossary',
-    'glossary.title': 'SEBI Capital Markets Terminology & Regulatory Glossary',
-    'glossary.subtitle': 'Official statutory terms, Devanagari definitions, and forensic threat analysis under the SEBI framework.',
+// Re-export Master Translations Dictionary for backwards compatibility
+export const UI_TRANSLATIONS = ALL_UI_TRANSLATIONS;
 
-    // Roles
-    'role.retail': 'Retail Investor',
-    'role.broker': 'Broker Compliance',
-    'role.mii': 'MII / Exchange',
-    'role.csuite': 'C-Suite & IR',
-    'role.secops': 'SecOps Auditor',
-
-    // Navigation Tabs
-    'nav.overview': 'Overview',
-    'nav.scanner': 'Threat Scanner',
-    'nav.vemar_arch': 'VEMAR Pipeline',
-    'nav.vemar_gaps': '8 Industry Gaps',
-    'nav.authenticator': 'SEBI Registry & Circulars',
-    'nav.authenticator_global': 'SEC EDGAR & FINRA Validator',
-    'nav.provenance': 'C2PA Provenance',
-    'nav.radar': 'Surveillance Radar',
-    'nav.enterprise': 'SIEM & OMS Gateway',
-    'nav.investor_pitch': 'Investor Pitch Decks',
-    'nav.guide': 'Investor Defense Guide',
-
-    // Quick Ribbon
-    'ribbon.badge': 'VEMAR AI ENTERPRISE',
-    'ribbon.sub_in': 'Production-grade defense for Institutional Brokers, Clearing Corps, & Regulators in India (SEBI).',
-    'ribbon.sub_global': 'Production-grade defense for Prime Brokers, Market Makers, & Regulators across Global & US Markets (SEC / FINRA).',
-    'ribbon.pipeline_btn': 'VEMAR Pipeline',
-    'ribbon.gaps_btn': '8 Industry Gaps',
-    'ribbon.pitch_btn': 'Dual Pitch Decks',
-    'ribbon.gateway_btn': 'SIEM & OMS Gateway',
-
-    // Scanner
-    'scanner.title': 'Multi-Modal Forensic Threat Scanner',
-    'scanner.subtitle': 'Real-time detection of AI voice clones, deepfake videos, spoofed regulatory circulars, and algorithmic pump campaigns.',
-    'scanner.input_label': 'Ingest Audio, Video, Document, or Market Communication:',
-    'scanner.scan_action': 'Run VEMAR Deep Forensic Scan',
-    'scanner.scanning': 'Running Deep Forensic Pipeline...',
-    'scanner.verdict_authentic': 'VERIFIED AUTHENTIC',
-    'scanner.verdict_synthetic': 'CRITICAL SYNTHETIC RISK DETECTED',
-    'scanner.risk_score': 'Synthetic Risk Score',
-    'scanner.halt_order': 'Trigger Pre-Trade FIX Halt',
-    'scanner.order_halted': 'FIX 35=D Order Halted & Logged',
-    'scanner.dossier_btn': 'Export Regulatory Audit Dossier',
-
-    // Common
-    'common.status': 'Status',
-    'common.verified': 'Verified Genuine',
-    'common.unverified': 'Suspicious / Unverified',
-    'common.search': 'Search or Query',
-    'common.download': 'Download Evidence',
-    'common.close': 'Close',
-    'common.filter': 'Filter by Category'
-  },
-  hi: {
-    // Brand & Header
-    'brand.title': 'वेमार एआई (VEMAR AI)',
-    'brand.tagline': 'ध्वनि, मध्यस्थ एवं मीडिया प्रामाणिकता और जोखिम विश्लेषण प्रणाली',
-    'brand.edition': 'एंटरप्राइज संस्करण v3.0',
-    'market.label': 'बाजार:',
-    'market.india': 'भारत (सेबी / एनएसई / बीएसई)',
-    'market.global': 'वैश्विक (एसईसी / फिनरा)',
-    'market.india_short': 'भारत',
-    'market.global_short': 'वैश्विक',
-    'language.label': 'भाषा:',
-    'language.en': 'English (अंग्रेजी)',
-    'language.hi': 'हिन्दी (Hindi)',
-    'glossary.btn': 'सेबी वित्तीय शब्दावली',
-    'glossary.title': 'सेबी पूंजी बाजार शब्दावली एवं वैधानिक मार्गदर्शिका',
-    'glossary.subtitle': 'भारतीय प्रतिभूति एवं विनिमय बोर्ड (SEBI) के तहत आधिकारिक शब्दावली, कानूनी धाराएं एवं साइबर सुरक्षा विश्लेषण।',
-
-    // Roles
-    'role.retail': 'खुदरा निवेशक',
-    'role.broker': 'ब्रोकर अनुपालन डेस्क',
-    'role.mii': 'बाजार अवसंरचना (MII/एक्सचेंज)',
-    'role.csuite': 'कॉर्पोरेट नेतृत्व एवं आईआर',
-    'role.secops': 'सुरक्षा लेखा परीक्षक (SecOps)',
-
-    // Navigation Tabs
-    'nav.overview': 'अवलोकन (होम)',
-    'nav.scanner': 'ख़तरा फोरेंसिक स्कैनर',
-    'nav.vemar_arch': 'वेमार पाइपलाइन आर्किटेक्चर',
-    'nav.vemar_gaps': '8 उद्योग कमियां एवं समाधान',
-    'nav.authenticator': 'सेबी पंजी एवं परिपत्र सत्यापन',
-    'nav.authenticator_global': 'वैश्विक एसईसी व फिनरा सत्यापन',
-    'nav.provenance': 'डिजिटल साक्ष्य (C2PA)',
-    'nav.radar': 'शेयर बाजार निगरानी रडार',
-    'nav.enterprise': 'एंटरप्राइज एसआईईएम एवं ओएमएस',
-    'nav.investor_pitch': 'निवेशक पिच डेक',
-    'nav.guide': 'निवेशक सुरक्षा मार्गदर्शिका',
-
-    // Quick Ribbon
-    'ribbon.badge': 'वेमार एआई एंटरप्राइज',
-    'ribbon.sub_in': 'भारतीय प्रतिभूति बाजार (SEBI, NSE, BSE) के संस्थागत ब्रोकर्स एवं निवेशकों के लिए समर्पित रक्षा प्रणाली।',
-    'ribbon.sub_global': 'वैश्विक एवं अमेरिकी वित्तीय बाजारों (SEC, FINRA, NYSE) के लिए संस्थागत फोरेंसिक एवं पूर्व-व्यापार नियंत्रण।',
-    'ribbon.pipeline_btn': 'वेमार 5-स्तरीय पाइपलाइन',
-    'ribbon.gaps_btn': '8 उद्योग सुरक्षा कमियां',
-    'ribbon.pitch_btn': 'निवेशक पिच डेक',
-    'ribbon.gateway_btn': 'एसआईईएम एवं ओएमएस गेटवे',
-
-    // Scanner
-    'scanner.title': 'मल्टी-मॉडल फोरेंसिक ख़तरा स्कैनर',
-    'scanner.subtitle': 'एआई वॉयस क्लोन, डीपफेक वीडियो, फर्जी सेबी परिपत्र और अवैध टेलीग्राम पंप ऑपरेशन्स की तत्काल पहचान।',
-    'scanner.input_label': 'ऑडियो, वीडियो, नियामक परिपत्र या बाजार संचार अपलोड करें:',
-    'scanner.scan_action': 'वेमार डीप फोरेंसिक जांच शुरू करें',
-    'scanner.scanning': 'गहन फोरेंसिक विश्लेषण जारी है...',
-    'scanner.verdict_authentic': 'पूर्णतः प्रामाणिक एवं सत्यापित',
-    'scanner.verdict_synthetic': 'अति-गंभीर कृत्रिम ख़तरा (डीपफेक / क्लोन) पाया गया',
-    'scanner.risk_score': 'कृत्रिम जोखिम स्कोर',
-    'scanner.halt_order': 'तत्काल पूर्व-व्यापार रोक (FIX Halt) लागू करें',
-    'scanner.order_halted': 'फिक्स 35=D ऑर्डर रोका गया एवं लॉग दर्ज',
-    'scanner.dossier_btn': 'वैधानिक फोरेंसिक डॉसियर डाउनलोड करें',
-
-    // Common
-    'common.status': 'स्थिति',
-    'common.verified': 'प्रमाणित वैध',
-    'common.unverified': 'संदिग्ध / अप्रमाणित',
-    'common.search': 'खोजें या जांचें',
-    'common.download': 'साक्ष्य डाउनलोड करें',
-    'common.close': 'बंद करें',
-    'common.filter': 'श्रेणी अनुसार छांटें'
-  }
-};
-
-interface LocalizationContextType {
+export interface LocalizationContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   toggleLanguage: () => void;
   isHindi: boolean;
+  isIndianLanguage: boolean;
+  isGlobalLanguage: boolean;
+  isRTL: boolean;
+  languageMeta: LanguageMeta;
+  allLanguages: LanguageMeta[];
+  indianLanguages: LanguageMeta[];
+  globalLanguages: LanguageMeta[];
+  marketLanguages: LanguageMeta[];
   market: MarketMode;
   setMarket: (market: MarketMode) => void;
   t: (key: string, defaultVal?: string) => string;
@@ -341,6 +223,9 @@ interface LocalizationContextType {
   isGlossaryOpen: boolean;
   openGlossary: () => void;
   closeGlossary: () => void;
+  isLanguageModalOpen: boolean;
+  openLanguageModal: () => void;
+  closeLanguageModal: () => void;
 }
 
 const LocalizationContext = createContext<LocalizationContextType | undefined>(undefined);
@@ -352,8 +237,11 @@ export const LocalizationProvider: React.FC<{
 }> = ({ children, initialJurisdiction = 'IN', onJurisdictionChange }) => {
   const [language, setLanguageState] = useState<Language>(() => {
     try {
-      const saved = localStorage.getItem('vemar_language');
-      return saved === 'hi' ? 'hi' : 'en';
+      const saved = localStorage.getItem('vemar_language') as Language;
+      if (saved && ALL_LANGUAGES_META.some((l) => l.code === saved)) {
+        return saved;
+      }
+      return 'en';
     } catch {
       return 'en';
     }
@@ -367,6 +255,7 @@ export const LocalizationProvider: React.FC<{
   });
 
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
+  const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
 
   // Synchronize initialJurisdiction if changed from outside
   useEffect(() => {
@@ -376,6 +265,21 @@ export const LocalizationProvider: React.FC<{
       setMarketState('IN');
     }
   }, [initialJurisdiction]);
+
+  const languageMeta = useMemo(() => getLanguageMeta(language), [language]);
+  const isIndianLanguage = useMemo(() => isIndianLanguageCode(language), [language]);
+  const isGlobalLanguage = useMemo(() => isGlobalLanguageCode(language), [language]);
+  const isRTL = languageMeta.dir === 'rtl';
+
+  // Handle document direction and language attribute for RTL/scripts
+  useEffect(() => {
+    try {
+      document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+      document.documentElement.lang = language;
+    } catch {
+      // ignore
+    }
+  }, [language, isRTL]);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
@@ -387,7 +291,12 @@ export const LocalizationProvider: React.FC<{
   };
 
   const toggleLanguage = () => {
-    setLanguage(language === 'en' ? 'hi' : 'en');
+    // Quick toggle between primary market language and English
+    if (market === 'IN') {
+      setLanguage(language === 'en' ? 'hi' : 'en');
+    } else {
+      setLanguage(language === 'en' ? 'es' : 'en');
+    }
   };
 
   const setMarket = (newMarket: MarketMode) => {
@@ -397,17 +306,15 @@ export const LocalizationProvider: React.FC<{
     }
   };
 
+  const marketLanguages = useMemo(() => {
+    if (market === 'IN') {
+      return [ALL_LANGUAGES_META[0], ...INDIAN_LANGUAGES_META];
+    }
+    return [ALL_LANGUAGES_META[0], ...GLOBAL_FOREIGN_LANGUAGES_META];
+  }, [market]);
+
   const t = (key: string, defaultVal?: string): string => {
-    const dict = UI_TRANSLATIONS[language];
-    if (dict && dict[key]) {
-      return dict[key];
-    }
-    // Fallback to English
-    const fallbackDict = UI_TRANSLATIONS['en'];
-    if (fallbackDict && fallbackDict[key]) {
-      return fallbackDict[key];
-    }
-    return defaultVal || key;
+    return getLocalizedText(language, key, defaultVal);
   };
 
   const getSebiTerm = (id: string) => {
@@ -421,6 +328,14 @@ export const LocalizationProvider: React.FC<{
         setLanguage,
         toggleLanguage,
         isHindi: language === 'hi',
+        isIndianLanguage,
+        isGlobalLanguage,
+        isRTL,
+        languageMeta,
+        allLanguages: ALL_LANGUAGES_META,
+        indianLanguages: INDIAN_LANGUAGES_META,
+        globalLanguages: GLOBAL_FOREIGN_LANGUAGES_META,
+        marketLanguages,
         market,
         setMarket,
         t,
@@ -428,7 +343,10 @@ export const LocalizationProvider: React.FC<{
         getSebiTerm,
         isGlossaryOpen,
         openGlossary: () => setIsGlossaryOpen(true),
-        closeGlossary: () => setIsGlossaryOpen(false)
+        closeGlossary: () => setIsGlossaryOpen(false),
+        isLanguageModalOpen,
+        openLanguageModal: () => setIsLanguageModalOpen(true),
+        closeLanguageModal: () => setIsLanguageModalOpen(false)
       }}
     >
       {children}

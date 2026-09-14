@@ -32,6 +32,7 @@ import { DynamicBackground, BackgroundTheme } from './DynamicBackground';
 import { AmbienceControl } from './AmbienceControl';
 import { useAuth } from '../context/AuthContext';
 import { MarketNewsTicker } from './MarketNewsTicker';
+import { LanguageSelector } from './LanguageSelector';
 
 interface LandingPageProps {
   jurisdiction: Jurisdiction;
@@ -362,6 +363,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 onOpenAuthenticator={() => onEnterPlatform('authenticator')}
               />
             </div>
+
+            {/* Language Selector */}
+            <LanguageSelector variant="header" />
 
             {!user ? (
               <button
