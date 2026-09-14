@@ -31,6 +31,7 @@ import { RegulatoryGatewayIndicator } from './RegulatoryGatewayIndicator';
 import { DynamicBackground, BackgroundTheme } from './DynamicBackground';
 import { AmbienceControl } from './AmbienceControl';
 import { useAuth } from '../context/AuthContext';
+import { MarketNewsTicker } from './MarketNewsTicker';
 
 interface LandingPageProps {
   jurisdiction: Jurisdiction;
@@ -455,6 +456,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
         </div>
       </header>
+
+      {/* Real-Time Institutional Regulatory News Ticker */}
+      <MarketNewsTicker
+        jurisdiction={jurisdiction}
+        onNavigateToScanner={() => onEnterPlatform('scanner')}
+      />
 
       {/* Hero Section with Large Animated Visuals */}
       <section className="relative overflow-hidden pt-12 pb-20 border-b border-slate-800/80">

@@ -437,5 +437,28 @@ export interface BetaTesterInvite {
   feedbackNotes?: string;
 }
 
+export type RegulatoryWireUrgency = 'CRITICAL' | 'ALERT' | 'UPDATE' | 'ADVISORY';
+export type RegulatoryWireCategory = 'ENFORCEMENT' | 'CIRCULAR' | 'DEEPFAKE_ALERT' | 'LITIGATION' | 'MARKET_ABUSE' | 'CSCRF';
+
+export interface RegulatoryNewsItem {
+  id: string;
+  headline: string;
+  hindiHeadline?: string;
+  source: 'SEBI' | 'SEC' | 'FINRA' | 'NSE' | 'BSE' | 'EDGAR';
+  sourceFullName: string;
+  jurisdiction: 'IN' | 'US' | 'GLOBAL';
+  category: RegulatoryWireCategory;
+  urgency: RegulatoryWireUrgency;
+  timestamp: string;
+  displayTime: string;
+  statutoryReference: string;
+  summary: string;
+  hindiSummary?: string;
+  impactedSectorOrEntity?: string;
+  officialDocUrl?: string;
+  verifiedSignatureHash: string;
+  isBreaking?: boolean;
+}
+
 
 

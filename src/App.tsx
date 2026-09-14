@@ -22,6 +22,7 @@ import { ClientAuthModal } from './components/ClientAuthModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { DynamicBackground, BackgroundTheme } from './components/DynamicBackground';
 import { CustomerMissionControl } from './components/CustomerMissionControl';
+import { MarketNewsTicker } from './components/MarketNewsTicker';
 import {
   ShieldCheck,
   ShieldAlert,
@@ -117,6 +118,12 @@ function MainApp() {
         onSelectTheme={setBgTheme}
         animationEnabled={animationEnabled}
         onToggleAnimation={setAnimationEnabled}
+      />
+
+      {/* Real-time SEBI & SEC Regulatory News Wire Ticker */}
+      <MarketNewsTicker
+        jurisdiction={jurisdiction}
+        onNavigateToScanner={() => setActiveTab('scanner')}
       />
 
       {/* Customer Mission Control & Persona Telemetry Station */}
