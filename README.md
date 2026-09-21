@@ -6,11 +6,12 @@
 [![Google Cloud Run Container](https://img.shields.io/badge/Google%20Cloud%20Run-Live%20Production-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://ais-dev-gxeibrudqrdzmfqb5qqftn-871239083716.asia-southeast1.run.app)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-rockerspace%2Fvemar--ai-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/rockerspace/vemar-ai)
 
-[![CI/CD Build](https://img.shields.io/badge/Build-Passing%20(v3.0.0)-emerald.svg)](#)
+[![CI/CD Build](https://img.shields.io/badge/Build-Passing%20(v3.1.0)-emerald.svg)](#)
 [![Dual Market: SEBI & SEC](https://img.shields.io/badge/Jurisdictions-SEBI%20(India)%20%7C%20SEC%20(US)-0284c7.svg)](#)
 [![Execution Latency](https://img.shields.io/badge/Execution%20Latency-%3C380ms%20(FIX%20Halt%20%3C18ms)-cyan.svg)](#)
 [![Provenance: C2PA v1.3](https://img.shields.io/badge/Provenance-C2PA%20Signed%20(FIPS%20140--3%20HSM)-indigo.svg)](#)
-[![Localization: English & Hindi](https://img.shields.io/badge/Localization-English%20%7C%20हिन्दी-amber.svg)](#)
+[![Data Visualization: Recharts](https://img.shields.io/badge/Visualizer-Recharts%20ComposedChart-06b6d4.svg)](#)
+[![Localization: 24+ Languages](https://img.shields.io/badge/Localization-24%2B%20Languages%20%7C%20English%20%7C%20हिन्दी-amber.svg)](#)
 
 ---
 
@@ -36,10 +37,11 @@
    - **🇺🇸 United States**: SEC Rule 10b-5, SEC Rule 17a-4(f) WORM compliance, FINRA Rule 2010, automated SEC Form TCR whistleblower reporting.
 4. **Real-Time Regulatory API Gateway Telemetry**: Live header status indicator with pulsing visual dot and telemetry diagnostics monitoring official SEBI and US SEC/EDGAR gateway latency, mTLS 1.3 protocol verification, and active feeds.
 5. **C2PA Cryptographic Provenance Studio**: Signs and verifies authentic corporate announcements using Google Cloud KMS Hardware Security Modules (FIPS 140-3 Level 3).
-6. **Bilingual Regional Financial Localization**: Native English and Hindi (हिन्दी) vocabulary support with an interactive searchable SEBI Regulatory Terminology Glossary.
+6. **Multi-Language Regional Financial Localization**: Support for 24+ Indian regional and global market languages (including English, हिन्दी, தமிழ், తెలుగు, বাংলা, मराठी, ગુજરાતી, ಕನ್ನಡ, മലയാളം, etc.) with an interactive searchable SEBI Regulatory Terminology Glossary.
 7. **06:00 AM Multi-Agent Command Council**: Coordinated 4-agent pre-market intelligence synthesis (Risk, Statutory Compliance, FIX SecOps, and Beta Launch Certification) with two-way voice dialogue.
 8. **Institutional Beta Testing Readiness Suite**: Automated 6-module diagnostics runner, latency micro-benchmarks, signed cohort key generator, and C2PA-verified certificate export.
-9. **Google AI & Cloud Native Production Blueprint**: Fully audited architecture leveraging Google Cloud Pub/Sub, Dataflow, Vertex AI, Cloud Run, Cloud SQL pgvector, and BigQuery.
+9. **Market Threat Distribution & Cross-Asset Surveillance Radar**: Interactive Recharts-powered telemetry tracking generative AI risk scores, 30-day baseline deviations, and automated regulatory actions across Equities, Derivatives, Primary Market/IPOs, Commodities, Fixed Income, and Forex.
+10. **Google AI & Cloud Native Production Blueprint**: Fully audited architecture leveraging Google Cloud Pub/Sub, Dataflow, Vertex AI, Cloud Run, Cloud SQL pgvector, and BigQuery.
 
 ---
 
@@ -421,6 +423,33 @@ The application header features a real-time connectivity status widget connected
 
 ---
 
+## 📊 Real-Time Market Threat Distribution & Cross-Asset Surveillance Radar
+
+Capital markets face asymmetrical generative AI manipulation spanning beyond single equity tickers. VEMAR AI features a real-time cross-asset class threat distribution engine (`SurveillanceRadar`) powered by `recharts`:
+
+- **Cross-Asset Class Telemetry Matrix**:
+  - **Equities (NSE/BSE Large-Cap / NYSE & NASDAQ)**: Tracking deepfake quarterly earnings call audio, forged board resolutions, and counterfeit SEC 8-K / SEBI LODR disclosures.
+  - **Index & Equity Derivatives (NIFTY/BANKNIFTY F&O / CME SPX & VIX)**: Detecting zero-DTE algorithmic spoofing, synthetic macroeconomic rumors, and artificial volatility spikes.
+  - **Primary Market & IPOs / SME**: Intercepting fraudulent grey market premium (GMP) syndicates, phishing UPI IPO allotment mandates, and registrar DNS impersonations.
+  - **Commodities & Energy (MCX Bullion & Crude / NYMEX WTI)**: Intercepting synthetic OPEC production leak audio, fabricated geopolitical supply disruptions, and spoofed warehouse receipts.
+  - **Sovereign Debt & Fixed Income (RBI NDS-OM / US Treasuries & TRACE)**: Guarding primary dealer auctions from spoofed central bank rate decision notices and wire authorization diversion.
+  - **Forex & Cross-Border FX (USD/INR OTC / EUR/USD Spot)**: Intercepting interbank SWIFT confirmation phishing and fabricated central bank currency intervention statements.
+
+- **ComposedChart Multi-Layered Visualizer**:
+  - **Dynamic Risk Score Bars**: Color-graded by severity—Crimson Red (Critical >80%), Amber (High 65–80%), and Cyan (Controlled <65%).
+  - **30-Day Moving Baseline Overlay**: Dashed time-series line showing statistical drift and anomaly divergence.
+  - **Statutory Enforcement Reference Lines**:
+    - **75% Mandatory Action Threshold**: Visual demarcation triggering automated SEBI GSM / ASM stage escalation or FINRA Rule 2010 trading halts.
+    - **50% Elevated Vigilance Threshold**: Demarcating watchlist elevation and synthetic content tagging.
+
+- **Operator Telemetry Controls**:
+  - **Multi-Metric Toggles**: Switch between **Risk Score (%)**, **Active Incidents (24h)**, and **30-Day Baseline (%)**.
+  - **Class Category Filtering**: Filter across *All Classes*, *Equities & F&O*, *Debt & FX*, or *Commodities & IPOs*.
+  - **Live Jitter Telemetry Stream**: Real-time 2.5-second background simulation loop with one-click Pause/Resume controls.
+  - **Interactive Asset Dossier & MII Alert Trigger**: Clicking any bar surfaces targeted issuers, primary generative vectors, regulatory safeguards, volume protected, and a direct "Dispatch MII Alert" action wired to the platform-wide toast notification system.
+
+---
+
 ## 🇮🇳 Bilingual Localization & SEBI Terminology Glossary
 
 - **Language Switcher**: Toggle between English and Hindi (**हिन्दी**) across all views.
@@ -563,7 +592,7 @@ VEMAR AI features a dedicated daily pre-market operational headquarters (`Daily 
 
 ## 🛠️ Technology Stack
 
-- **Frontend**: React 19, TypeScript, Tailwind CSS 4, Motion (`motion/react`), Lucide Icons, jsPDF (`jspdf`)
+- **Frontend**: React 19, TypeScript, Tailwind CSS 4, Motion (`motion/react`), Recharts (`recharts` Composed Time-Series Charts), Lucide Icons, jsPDF (`jspdf`)
 - **Backend & Middleware**: Node.js, Express, Vite SPA Middleware, esbuild
 - **Google Cloud & AI**:
   - **Google Cloud Pub/Sub**: High-throughput distributed event streaming (< 12ms ACK)

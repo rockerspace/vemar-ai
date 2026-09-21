@@ -136,6 +136,23 @@ export interface ProvenanceSeal {
   qrPayload: string;
 }
 
+// Asset Class Real-Time Threat Telemetry
+export interface AssetClassThreat {
+  id: string;
+  assetClass: string;
+  shortName: string;
+  marketCode: string;
+  riskScore: number;
+  benchmarkScore: number;
+  incidentCount: number;
+  riskTrend: number;
+  threatLevel: ThreatLevel;
+  primaryVector: string;
+  prominentTarget: string;
+  regulatoryAction: string;
+  protectedVolume: string;
+}
+
 // Market Surveillance Telemetry
 export interface ThreatTelemetry {
   statistics: {
@@ -168,6 +185,7 @@ export interface ThreatTelemetry {
     status: string;
     impactPrevented: string;
   }[];
+  assetClassThreats?: AssetClassThreat[];
 }
 
 // Enterprise SIEM & Audit Trail
