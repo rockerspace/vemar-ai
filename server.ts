@@ -1,4 +1,5 @@
 import express from 'express';
+import http from 'http';
 import path from 'path';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
@@ -2060,11 +2061,15 @@ async function startServer() {
     });
   });
 
+  const httpServer = http.createServer(app);
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
-        hmr: false,
+        hmr: {
+          server: httpServer,
+        },
       },
       appType: 'spa',
     });
@@ -2077,7 +2082,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`Securities Sentinel Enterprise Server running on http://0.0.0.0:${PORT}`);
   });
 }

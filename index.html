@@ -3,6 +3,50 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function() {
+        function isBenign(target) {
+          if (!target) return false;
+          var str = (typeof target === 'string' ? target : (target.message || target.reason || target.stack || String(target))) || '';
+          var s = str.toLowerCase();
+          return s.indexOf('websocket') !== -1 || s.indexOf('closed without opened') !== -1 || s.indexOf('failed to connect') !== -1;
+        }
+        window.addEventListener('unhandledrejection', function(event) {
+          var r = event.reason;
+          var isWs = typeof WebSocket !== 'undefined' && (r instanceof WebSocket || (r && r.target instanceof WebSocket));
+          if (isWs || isBenign(r)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return false;
+          }
+        }, true);
+        window.addEventListener('error', function(event) {
+          if (isBenign(event.error) || isBenign(event.message)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return false;
+          }
+        }, true);
+        if (typeof MutationObserver !== 'undefined') {
+          var observer = new MutationObserver(function(mutations) {
+            for (var i = 0; i < mutations.length; i++) {
+              for (var j = 0; j < mutations[i].addedNodes.length; j++) {
+                var node = mutations[i].addedNodes[j];
+                if (node.nodeName && node.nodeName.toLowerCase() === 'vite-error-overlay') {
+                  var text = (node.shadowRoot ? node.shadowRoot.textContent : node.textContent) || '';
+                  if (isBenign(text)) {
+                    node.remove();
+                  }
+                }
+              }
+            }
+          });
+          if (document.documentElement) {
+            observer.observe(document.documentElement, { childList: true, subtree: true });
+          }
+        }
+      })();
+    </script>
     <title>VEMAR AI — Voice, Entity & Media Authentication and Risk Intelligence</title>
     <meta name="description" content="Voice, Entity & Media Authentication and Risk AI — Production-grade multi-modal synthetic media forensics, voice anti-spoofing, C2PA cryptographic provenance, regulatory news streaming, and comprehensive Indian regional & global language localization across SEBI and SEC/FINRA capital markets." />
     <meta property="og:title" content="VEMAR AI — Voice, Entity & Media Authentication and Risk Intelligence" />
