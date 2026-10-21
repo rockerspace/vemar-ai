@@ -18,7 +18,8 @@ export type AuditActionType =
   | 'SYS_CONFIG_MODIFIED'
   | 'PRE_TRADE_ORDER_HALTED'
   | 'REGULATORY_ALERT_DOCUMENTED'
-  | 'HIGH_RISK_TRADE_INTERCEPTED';
+  | 'HIGH_RISK_TRADE_INTERCEPTED'
+  | 'VOICE_ANOMALY_AUDITED';
 
 export type AuditCategory =
   | 'Forensic Analysis'
@@ -35,6 +36,28 @@ export type AuditSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO';
 
 export type AuditStatus = 'VERIFIED' | 'TAMPER_EVIDENT_SEALED' | 'FLAGGED' | 'COMPLIANT';
 
+export interface VoiceForensicMarkerItem {
+  title: string;
+  description: string;
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  deviation: string;
+}
+
+export interface VoiceForensicMarkers {
+  cosineSimilarity?: number;
+  pitchDivergenceHz?: number;
+  vocoderPhaseScore?: number;
+  roomImpulseScore?: number;
+  formantDispersionErrorHz?: number;
+  highFreqCutoffDb?: number;
+  jitterDeltaPercent?: number;
+  shimmerDeltaPercent?: number;
+  anomaliesCount?: number;
+  anomaliesList?: VoiceForensicMarkerItem[];
+  hardwareCertSerial?: string;
+  enrolledVoiceprintId?: string;
+}
+
 export interface AuditRecordDetails {
   summary: string;
   targetEntity?: string;
@@ -46,6 +69,12 @@ export interface AuditRecordDetails {
   exportedFormat?: string;
   verifiedAuthority?: string;
   inspectionNotes?: string;
+  audioFileName?: string;
+  audioDurationSec?: number;
+  audioUrl?: string;
+  deepfakeProbability?: number;
+  verdict?: 'AUTHENTIC_MATCH' | 'SYNTHETIC_DEEPFAKE_CLONE' | 'UNENROLLED_SPEAKER_MISMATCH';
+  forensicMarkers?: VoiceForensicMarkers;
   metadata?: Record<string, any>;
 }
 

@@ -26,7 +26,8 @@ import {
   Database,
   Radio,
   Sliders,
-  Check
+  Check,
+  History
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -51,11 +52,13 @@ import { useNotificationToast } from '../context/NotificationToastContext';
 import { useAuditLog } from '../context/AuditLogContext';
 import { downloadCryptographicallySignedPDF } from '../utils/pdfExport';
 import { auditRecordToForensicFinding } from '../utils/cryptoSignature';
+import { VoiceAnomalyHistory } from './VoiceAnomalyHistory';
 
 interface VoiceAnomalyVerifierProps {
   jurisdiction: Jurisdiction;
   currentRole: UserRole;
   initialUploadedAudio?: string | null;
+  initialActiveTab?: 'verifier' | 'history';
   onVerificationComplete?: (metrics: VoiceComparisonMetrics, targetSignature: KnownVoiceSignature) => void;
   onNavigateToScanner?: () => void;
 }
@@ -64,11 +67,33 @@ export const VoiceAnomalyVerifier: React.FC<VoiceAnomalyVerifierProps> = ({
   jurisdiction,
   currentRole,
   initialUploadedAudio = null,
+  initialActiveTab = 'verifier',
   onVerificationComplete,
   onNavigateToScanner
 }) => {
   const { notifyRegulatoryAlert, notifySuccess, notifyInfo } = useNotificationToast();
-  const { logActivity } = useAuditLog();
+  const { logActivity, logs } = useAuditLog();
+
+  const [activeVerifierTab, setActiveVerifierTab] = useState<'verifier' | 'history'>(initialActiveTab);
+
+  // Count of voice forensic entries recorded in the Compliance Audit Ledger
+  const voiceRecordsCount = useMemo(() => {
+    return logs.filter((log) => {
+      const isVoiceAction =
+        log.action === 'VOICE_ANOMALY_AUDITED' ||
+        log.action === 'FORENSIC_SCAN_EXECUTED' ||
+        log.action === 'PRE_TRADE_ORDER_HALTED';
+      const isVoiceChannel =
+        log.details?.channel === 'audio_call' ||
+        log.details?.deepfakeProbability !== undefined ||
+        log.actionLabel?.toLowerCase().includes('voice') ||
+        log.actionLabel?.toLowerCase().includes('audio') ||
+        log.targetAssetOrEntity?.toLowerCase().includes('audio') ||
+        log.details?.summary?.toLowerCase().includes('voice') ||
+        log.details?.summary?.toLowerCase().includes('acoustic');
+      return isVoiceAction && isVoiceChannel;
+    }).length;
+  }, [logs]);
 
   const isUS = jurisdiction === 'US';
 
@@ -239,7 +264,7 @@ export const VoiceAnomalyVerifier: React.FC<VoiceAnomalyVerifierProps> = ({
   const handleDocumentToAuditLog = async (): Promise<string> => {
     const isClone = comparisonResults.verdict === 'SYNTHETIC_DEEPFAKE_CLONE';
     const auditEntry = await logActivity({
-      action: isClone ? 'PRE_TRADE_ORDER_HALTED' : 'FORENSIC_SCAN_EXECUTED',
+      action: isClone ? 'PRE_TRADE_ORDER_HALTED' : 'VOICE_ANOMALY_AUDITED',
       actionLabel: `Voice Biometric Signature Verification: ${activeSignature.executiveName}`,
       category: 'Forensic Analysis',
       jurisdiction,
@@ -256,6 +281,25 @@ export const VoiceAnomalyVerifier: React.FC<VoiceAnomalyVerifierProps> = ({
         riskScore: comparisonResults.overallDeepfakeProbability,
         threatLevel: isClone ? 'CRITICAL' : 'AUTHENTIC',
         statutoryCode: isUS ? 'SEC Rule 10b-5' : 'SEBI PFUTP Reg 4(2)(k)',
+        audioFileName,
+        audioDurationSec: 8.5,
+        audioUrl: uploadedAudioUrl || undefined,
+        deepfakeProbability: comparisonResults.overallDeepfakeProbability,
+        verdict: comparisonResults.verdict,
+        forensicMarkers: {
+          cosineSimilarity: comparisonResults.cosineSimilarityPercent,
+          pitchDivergenceHz: comparisonResults.pitchDivergenceHz,
+          vocoderPhaseScore: comparisonResults.vocoderPhaseCoherenceScore,
+          roomImpulseScore: comparisonResults.roomAcousticImpulseScore,
+          formantDispersionErrorHz: comparisonResults.formantDispersionErrorHz,
+          highFreqCutoffDb: comparisonResults.highFreqEnergyAbove7800HzDb,
+          jitterDeltaPercent: comparisonResults.jitterDeltaPercent,
+          shimmerDeltaPercent: comparisonResults.shimmerDeltaPercent,
+          anomaliesCount: comparisonResults.detectedAnomalies.length,
+          anomaliesList: comparisonResults.detectedAnomalies,
+          hardwareCertSerial: activeSignature.c2paHardwareCertSerial,
+          enrolledVoiceprintId: activeSignature.id
+        },
         metadata: {
           enrolledSignatureId: activeSignature.id,
           kycRegistrationId: activeSignature.kycRegistrationId,
@@ -356,8 +400,61 @@ export const VoiceAnomalyVerifier: React.FC<VoiceAnomalyVerifierProps> = ({
         </div>
       </div>
 
-      {/* Main 2-Column Verification Workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Tab Switcher: Live Biometric Verifier vs Anomaly History & Audit Ledger */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+        <div className="flex items-center gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+          <button
+            id="tab-voice-verifier-live-btn"
+            type="button"
+            onClick={() => setActiveVerifierTab('verifier')}
+            className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+              activeVerifierTab === 'verifier'
+                ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-950/50'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Mic className="w-4 h-4 text-cyan-300" />
+            <span>Live Biometric Verifier</span>
+          </button>
+
+          <button
+            id="tab-voice-anomaly-history-btn"
+            type="button"
+            onClick={() => setActiveVerifierTab('history')}
+            className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+              activeVerifierTab === 'history'
+                ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-950/50'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <History className="w-4 h-4 text-amber-400" />
+            <span>Anomaly History & Audit Ledger</span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              {voiceRecordsCount} Recorded
+            </span>
+          </button>
+        </div>
+
+        <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-slate-400">
+          <Scale className="w-3.5 h-3.5 text-cyan-400" />
+          <span>FIPS 140-3 Hardware Sealed & SEBI CSCRF Compliant</span>
+        </div>
+      </div>
+
+      {activeVerifierTab === 'history' ? (
+        <VoiceAnomalyHistory
+          jurisdiction={jurisdiction}
+          currentRole={currentRole}
+          onNavigateToVerifierTab={() => setActiveVerifierTab('verifier')}
+          onSelectForVerification={(sigId, isSynthetic) => {
+            setSelectedSignatureId(sigId);
+            setIsSyntheticScenario(isSynthetic);
+            setActiveVerifierTab('verifier');
+          }}
+        />
+      ) : (
+        /* Main 2-Column Verification Workspace */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Signature Selection & Audio Ingestion (5 Cols) */}
         <div className="lg:col-span-5 space-y-5">
           {/* Step 1: Select Target Known Voice Signature */}
@@ -819,6 +916,7 @@ export const VoiceAnomalyVerifier: React.FC<VoiceAnomalyVerifierProps> = ({
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 };

@@ -76,6 +76,57 @@ function getInitialSeedLogs(): ComplianceAuditEntry[] {
 
   return [
     {
+      id: 'AUDIT-2026-10499',
+      timestamp: new Date(now - minute * 1).toISOString(),
+      sequenceNumber: 10499,
+      prevHash: '8b7f294029485710293847561928374659102938475610293847561928374650',
+      recordHash: '9d2e401827461948271038572910485928103948571920384756192837465019',
+      operatorName: 'Narendra Ragav Venkatesan',
+      operatorEmail: 'narendrav64@gmail.com',
+      operatorRole: 'broker_compliance',
+      action: 'VOICE_ANOMALY_AUDITED',
+      actionLabel: 'Executive Voice Biometric Signature Verification: Tim Cook',
+      category: 'Forensic Analysis',
+      jurisdiction: 'US',
+      statutoryRegime: 'SEC Rule 17a-4 / FRE 902(14)',
+      targetAssetOrEntity: 'Tim Cook [NASDAQ: AAPL]',
+      severity: 'LOW',
+      status: 'VERIFIED',
+      ipAddress: '103.21.244.12',
+      sessionId: 'sess_live_8912',
+      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+      details: {
+        summary: 'Authentic voice signature verified. Formant alignment error 14Hz within FIPS 140-3 tolerance limits. Timbre cosine similarity: 96%.',
+        targetEntity: 'Tim Cook (Apple Inc.)',
+        channel: 'audio_call',
+        riskScore: 5,
+        threatLevel: 'AUTHENTIC',
+        statutoryCode: 'SEC Rule 10b-5 / Electronic Records Integrity',
+        audioFileName: 'apple_q3_executive_briefing.wav',
+        audioDurationSec: 12.4,
+        deepfakeProbability: 5,
+        verdict: 'AUTHENTIC_MATCH',
+        forensicMarkers: {
+          cosineSimilarity: 96,
+          pitchDivergenceHz: 3,
+          vocoderPhaseScore: 91,
+          roomImpulseScore: 78,
+          formantDispersionErrorHz: 14,
+          highFreqCutoffDb: -16.4,
+          jitterDeltaPercent: 0.04,
+          shimmerDeltaPercent: 0.12,
+          anomaliesCount: 0,
+          anomaliesList: [],
+          hardwareCertSerial: 'FIPS-140-3-CERT-US-8921',
+          enrolledVoiceprintId: 'sig-tim-cook-aapl'
+        },
+        metadata: {
+          enrolledSignatureId: 'sig-tim-cook-aapl',
+          kycRegistrationId: 'SEC-KYC-AAPL-00109'
+        }
+      }
+    },
+    {
       id: 'AUDIT-2026-10498',
       timestamp: new Date(now - minute * 2).toISOString(),
       sequenceNumber: 10498,
@@ -102,6 +153,37 @@ function getInitialSeedLogs(): ComplianceAuditEntry[] {
         riskScore: 98,
         threatLevel: 'CRITICAL',
         statutoryCode: 'SEBI Circular CIR/ISD/1/2011',
+        audioFileName: 'reliance_trade_order_spoof.wav',
+        audioDurationSec: 6.8,
+        deepfakeProbability: 98,
+        verdict: 'SYNTHETIC_DEEPFAKE_CLONE',
+        forensicMarkers: {
+          cosineSimilarity: 81,
+          pitchDivergenceHz: 42,
+          vocoderPhaseScore: 12,
+          roomImpulseScore: 8,
+          formantDispersionErrorHz: 184,
+          highFreqCutoffDb: -48.2,
+          jitterDeltaPercent: 0.16,
+          shimmerDeltaPercent: 0.74,
+          anomaliesCount: 4,
+          anomaliesList: [
+            {
+              title: 'Vocoder Bandwidth Phase Cutoff',
+              description: 'Sharp brickwall cutoff at 7.8kHz',
+              severity: 'CRITICAL',
+              deviation: '-48.2 dB attenuation'
+            },
+            {
+              title: 'Flatline Pitch Jitter Discontinuity',
+              description: 'Missing glottal pulses during voiced phonemes',
+              severity: 'CRITICAL',
+              deviation: 'Δ 42 Hz pitch divergence'
+            }
+          ],
+          hardwareCertSerial: 'FIPS-140-3-CERT-IN-7749',
+          enrolledVoiceprintId: 'sig-mukesh-ambani-ril'
+        },
         metadata: {
           fixTag35: 'D (New Order Single)',
           executionLatencyMs: 13.4,
@@ -119,14 +201,14 @@ function getInitialSeedLogs(): ComplianceAuditEntry[] {
       operatorName: 'Narendra Ragav Venkatesan',
       operatorEmail: 'narendrav64@gmail.com',
       operatorRole: 'broker_compliance',
-      action: 'FORENSIC_SCAN_EXECUTED',
-      actionLabel: 'Executive Audio Forensic Analysis & Voice Liveness Scan',
+      action: 'VOICE_ANOMALY_AUDITED',
+      actionLabel: 'Executive Audio Forensic Analysis & Voice Liveness Scan: N. Chandrasekaran',
       category: 'Forensic Analysis',
       jurisdiction: 'IN',
       statutoryRegime: 'SEBI Master Circular ISD/MIRSD / IT Act §66D',
       targetAssetOrEntity: 'TATAMOTORS (NSE) Emergency Audio Leak',
       severity: 'CRITICAL',
-      status: 'VERIFIED',
+      status: 'FLAGGED',
       ipAddress: '103.21.244.12',
       sessionId: 'sess_live_8912',
       userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
@@ -137,6 +219,37 @@ function getInitialSeedLogs(): ComplianceAuditEntry[] {
         riskScore: 94,
         threatLevel: 'CRITICAL',
         statutoryCode: 'SEBI (Prohibition of Fraudulent and Unfair Trade Practices) Reg 4(2)(k)',
+        audioFileName: 'tatamotors_emergency_audio_leak.wav',
+        audioDurationSec: 9.1,
+        deepfakeProbability: 94,
+        verdict: 'SYNTHETIC_DEEPFAKE_CLONE',
+        forensicMarkers: {
+          cosineSimilarity: 78,
+          pitchDivergenceHz: 31,
+          vocoderPhaseScore: 17,
+          roomImpulseScore: 11,
+          formantDispersionErrorHz: 162,
+          highFreqCutoffDb: -42.8,
+          jitterDeltaPercent: 0.14,
+          shimmerDeltaPercent: 0.68,
+          anomaliesCount: 3,
+          anomaliesList: [
+            {
+              title: 'Phase Incoherence & Vocoder Cutoff',
+              description: 'Synthetic brickwall filter cutoff at 7.8kHz',
+              severity: 'CRITICAL',
+              deviation: '-42.8 dB drop'
+            },
+            {
+              title: 'Glottal Respiration Micro-Jitter Void',
+              description: 'Absence of human autonomic vocal cord flutter',
+              severity: 'HIGH',
+              deviation: 'Jitter <0.08%'
+            }
+          ],
+          hardwareCertSerial: 'FIPS-140-3-CERT-IN-8821',
+          enrolledVoiceprintId: 'sig-n-chandrasekaran-tata'
+        },
         metadata: {
           acousticJitter: 0.18,
           syntheticPitchDiscontinuityHz: 480,
