@@ -609,6 +609,9 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <AlertCircle className="w-4 h-4" />
           <span>{t('nav.guide', 'Defense Guide')}</span>
+          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+            FAQ
+          </span>
         </button>
       </div>
     </header>

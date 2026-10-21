@@ -221,7 +221,9 @@ function MainApp() {
             onNavigateToArchitecture={() => setActiveTab('vemar_arch')}
           />
         )}
-        {activeTab === 'guide' && <InvestorProtectionGuide />}
+        {activeTab === 'guide' && (
+          <InvestorProtectionGuide jurisdiction={jurisdiction} />
+        )}
       </main>
 
       {/* Enterprise Institutional Footer */}
